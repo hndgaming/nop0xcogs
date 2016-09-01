@@ -31,7 +31,7 @@ class dictionary:
             if number > 1:
                 try:
                     msg += "\n**" + word + "**\n"
-                    msg += "\n**Entry #" + str(number) + " of " + str(len(data))+ "**"
+                    msg += "\n**Entry #" + str(number) + " of " + str(len(data))+ "**" + "\n"
                     msg += "\n*Type*: " + str(data[number-1]['type'])+ "\n" + "\n*Definition*: " + self.remove_tags(str(data[number - 1]['defenition']))+ "\n" + "\n*Example*: " + str(data[number - 1]['example'])
                     await self.bot.say(msg)
                 except:
