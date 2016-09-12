@@ -25,24 +25,26 @@ class logo:
         """Example: -logo name (3 or 4 chars)"""
         offset = 10
         user = ctx.message.author
-        for x in range(0, len(user.roles)):
-            if (user.roles[x].name == "Veteran") | (user.roles[x].name == "Regular"):
-                self.color = str(user.color)
-                break
-            else:
-                return
+        allowed_roles = ["Veteran", "Regular"]
+        xyz = [True for role in ctx.message.author.roles if role.name in allowed_roles]
+        if xyz:
+            self.color = str(user.color)
+        else:
+            await self.bot.say("You are not allowed to do that.")
+            return
         o = 357
         img = Image.open("avabg.png")
         draw = ImageDraw.Draw(img)
-        width, height = 0,0
         if(len(name) == 3):
             font = ImageFont.truetype("spaceman.ttf", 155)
             width, height = draw.textsize('ooo', font=font)
+            width = width - 26
         elif(len(name) == 4):
             font = ImageFont.truetype("spaceman.ttf", 135)
             width, height = draw.textsize('oooo', font=font)
+            width = width - 26
         else:
-            await self.bot.say("You are a retard")
+            await self.bot.say("Only 3 or 4 letters are allowed.")
             return
         shadowcolor = "#1e2124"
         text = name
