@@ -29,20 +29,22 @@ class logo:
             if (user.roles[x].name == "Veteran") | (user.roles[x].name == "Regular"):
                 self.color = str(user.color)
                 break
+            else:
+                return
         o = 357
+        img = Image.open("avabg.png")
+        draw = ImageDraw.Draw(img)
         if(len(name) == 3):
             font = ImageFont.truetype("spaceman.ttf", 155)
+            width, height = draw.textsize('ooo', font=font)
         elif(len(name) == 4):
             font = ImageFont.truetype("spaceman.ttf", 135)
+            width, height = draw.textsize('oooo', font=font)
         else:
             await self.bot.say("You are a retard")
             return
-        img = Image.open("avabg.png")
-        draw = ImageDraw.Draw(img)
         shadowcolor = "#1e2124"
         text = name
-        width,height = draw.textsize(text, font=font)
-        height -= 10
         x = o-width/2.0
         y = o-height/2.0
         draw.text((x - offset, y - offset), text, font=font, fill=shadowcolor)
