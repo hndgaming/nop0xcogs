@@ -34,6 +34,7 @@ class logo:
         o = 357
         img = Image.open("avabg.png")
         draw = ImageDraw.Draw(img)
+        width, height = 0,0
         if(len(name) == 3):
             font = ImageFont.truetype("spaceman.ttf", 155)
             width, height = draw.textsize('ooo', font=font)
