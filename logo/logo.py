@@ -43,6 +43,9 @@ class logo:
             font = ImageFont.truetype("spaceman.ttf", 135)
             width, height = draw.textsize('oooo', font=font)
             width = width - 26
+        elif (len(name) == 2):
+            font = ImageFont.truetype("spaceman.ttf", 175)
+            width, height = draw.textsize('oo', font=font)
         else:
             await self.bot.say("Only 3 or 4 letters are allowed.")
             return
