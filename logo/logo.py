@@ -27,14 +27,14 @@ class logo:
         user = ctx.message.author
         for x in range(0, len(user.roles)):
             if (user.roles[x].name == "Veteran") | (user.roles[x].name == "Regular"):
-                #self.color = user.color
+                self.color = user.color
                 break
         self.color = str(self.color)
         o = 357
         if(len(name) == 3):
             font = ImageFont.truetype("spaceman.ttf", 155)
         elif(len(name) == 4):
-            font = ImageFont.truetype("spaceman.ttf", 140)
+            font = ImageFont.truetype("spaceman.ttf", 135)
         else:
             await self.bot.say("You are a retard")
             return
