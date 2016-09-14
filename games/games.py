@@ -2,7 +2,7 @@ import os
 from discord.ext import commands
 from __main__ import send_cmd_help
 from cogs.utils.dataIO import fileIO
-
+from .utils import checks
 
 
 
@@ -18,6 +18,7 @@ class games:
             await send_cmd_help(ctx)
 
     @game.command()
+    @checks.admin_or_permissions(manage_roles=True)
     async def add(self, short:str, name:str):
         """Add a game to the list"""
         if name not in self.games:
