@@ -39,6 +39,7 @@ class games:
         await self.bot.say(msg)
 
     @game.command()
+    @checks.admin_or_permissions(manage_roles=True)
     async def remove(self, short: str, name: str):
         """Add a game to the list"""
         if name in self.games:
