@@ -22,9 +22,9 @@ class games:
     async def add(self, short:str, name:str):
         """Add a game to the list"""
         if name not in self.games:
-            self.games[name] = {}
-            self.games[name]["name"] = name
-            self.games[name]["short"] = short
+            self.games[short] = {}
+            self.games[short]["name"] = name
+            self.games[short]["short"] = short
             fileIO("data/games/games.json", "save", self.games)
             await self.bot.say("Game has been added!")
         else:
@@ -42,8 +42,8 @@ class games:
     @checks.admin_or_permissions(manage_roles=True)
     async def remove(self, short: str, name: str):
         """Add a game to the list"""
-        if name in self.games:
-            del self.games[name]
+        if short in self.games:
+            del self.games[short]
             fileIO("data/games/games.json", "save", self.games)
             await self.bot.say("Game has been removed!")
         else:
