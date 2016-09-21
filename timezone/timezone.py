@@ -36,7 +36,7 @@ class timezone:
 
     @localtime.command(name="location", pass_context=True)
     async def location(self, ctx, location: str = ""):
-        """Example: -localtime <ISO Code>"""
+        """Example: -localtime location <ISO Code>"""
         re1 = '((?:[a-z][a-z]+))'  # Word 1
         re2 = '.*?'  # Non-greedy match on filler
         re3 = '((?:[a-z][a-z]+))'  # Word 2
@@ -64,7 +64,7 @@ class timezone:
 
     @localtime.command(name="user",pass_context=True)
     async def time(self, ctx, user: discord.Member = None):
-        """Example: -localtime @user"""
+        """Example: -timezone to display your own timezone \n -timezone <user> to display a users timezone"""
         author = ctx.message.author
         subregionobj = None
         countryobj = None
