@@ -64,7 +64,7 @@ class timezone:
 
     @localtime.command(name="user",pass_context=True)
     async def time(self, ctx, user: discord.Member = None):
-        """Example: -timezone to display your own timezone \n -timezone <user> to display a users timezone"""
+        """Example: -timezone to display your own timezone / -timezone <user> to display a users timezone"""
         author = ctx.message.author
         subregionobj = None
         countryobj = None
