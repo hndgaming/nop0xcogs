@@ -37,7 +37,7 @@ class NoModLogChannel(ModError):
     pass
 
 
-class Mod:
+class Modenhanced:
     """Moderation tools."""
 
     def __init__(self, bot):
