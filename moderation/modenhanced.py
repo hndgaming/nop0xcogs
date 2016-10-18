@@ -14,29 +14,6 @@ import os
 import logging
 import asyncio
 
-default_settings = {
-    "ban_mention_spam" : False,
-    "delete_repeats"   : False,
-    "mod-log"          : None
-                   }
-
-
-class ModError(Exception):
-    pass
-
-
-class UnauthorizedCaseEdit(ModError):
-    pass
-
-
-class CaseMessageNotFound(ModError):
-    pass
-
-
-class NoModLogChannel(ModError):
-    pass
-
-
 class Modenhanced:
     """Moderation tools."""
 
@@ -1393,8 +1370,29 @@ def setup(bot):
         handler.setFormatter(
             logging.Formatter('%(asctime)s %(message)s', datefmt="[%d/%m/%Y %H:%M]"))
         logger.addHandler(handler)
-    n = Mod(bot)
+    n = Modenhanced(bot)
     bot.add_listener(n.check_names, "on_member_update")
     loop = asyncio.get_event_loop()
     loop.create_task(n.mute_check())
     bot.add_cog(n)
+
+default_settings = {
+    "ban_mention_spam" : False,
+    "delete_repeats"   : False,
+    "mod-log"          : None
+                   }
+
+class ModError(Exception):
+    pass
+
+
+class UnauthorizedCaseEdit(ModError):
+    pass
+
+
+class CaseMessageNotFound(ModError):
+    pass
+
+
+class NoModLogChannel(ModError):
+    pass
