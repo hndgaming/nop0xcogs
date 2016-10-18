@@ -1370,7 +1370,7 @@ def setup(bot):
         handler.setFormatter(
             logging.Formatter('%(asctime)s %(message)s', datefmt="[%d/%m/%Y %H:%M]"))
         logger.addHandler(handler)
-    n = Modenhanced(bot)
+    n = modenhanced(bot)
     bot.add_listener(n.check_names, "on_member_update")
     loop = asyncio.get_event_loop()
     loop.create_task(n.mute_check())
