@@ -14,7 +14,7 @@ import os
 import logging
 import asyncio
 
-class Modenhanced:
+class modenhanced:
     """Moderation tools."""
 
     def __init__(self, bot):
