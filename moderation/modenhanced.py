@@ -37,24 +37,24 @@ class NoModLogChannel(ModError):
     pass
 
 
-class Modenhanced:
+class Mod:
     """Moderation tools."""
 
     def __init__(self, bot):
         self.bot = bot
-        self.whitelist_list = dataIO.load_json("data/mod/whitelist.json")
-        self.blacklist_list = dataIO.load_json("data/mod/blacklist.json")
-        self.ignore_list = dataIO.load_json("data/mod/ignorelist.json")
-        self.filter = dataIO.load_json("data/mod/filter.json")
-        self.past_names = dataIO.load_json("data/mod/past_names.json")
-        self.mutes = dataIO.load_json("data/mod/mutes.json")
-        self.past_nicknames = dataIO.load_json("data/mod/past_nicknames.json")
-        self.warnings = dataIO.load_json("data/mod/warnings.json")
-        self.rules = dataIO.load_json("data/mod/rules.json")
-        settings = dataIO.load_json("data/mod/settings.json")
+        self.whitelist_list = dataIO.load_json("data/modenhanced/whitelist.json")
+        self.blacklist_list = dataIO.load_json("data/modenhanced/blacklist.json")
+        self.ignore_list = dataIO.load_json("data/modenhanced/ignorelist.json")
+        self.filter = dataIO.load_json("data/modenhanced/filter.json")
+        self.past_names = dataIO.load_json("data/modenhanced/past_names.json")
+        self.mutes = dataIO.load_json("data/modenhanced/mutes.json")
+        self.past_nicknames = dataIO.load_json("data/modenhanced/past_nicknames.json")
+        self.warnings = dataIO.load_json("data/modenhanced/warnings.json")
+        self.rules = dataIO.load_json("data/modenhanced/rules.json")
+        settings = dataIO.load_json("data/modenhanced/settings.json")
         self.settings = defaultdict(lambda: default_settings.copy(), settings)
         self.cache = defaultdict(lambda: deque(maxlen=3))
-        self.cases = dataIO.load_json("data/mod/modlog.json")
+        self.cases = dataIO.load_json("data/modenhanced/modlog.json")
         self._tmp_banned_cache = []
         self.last_case = defaultdict(lambda: dict())
 
@@ -79,7 +79,7 @@ class Modenhanced:
     async def mutetime(self, ctx, time: str):
         """Sets the default mutetime."""
         self.settings["mutetime"] = time
-        dataIO.save_json("data/mod/settings.json", self.settings)
+        dataIO.save_json("data/modenhanced/settings.json", self.settings)
         await self.bot.say("Saved the mutetime.")
 
     @modset.command(name="spamdelete", pass_context=True)
@@ -87,18 +87,18 @@ class Modenhanced:
         """Toggles to delete Spamesque Characters or not."""
         if(self.settings["spamdelete"]):
             self.settings["spamdelete"] = False
-            dataIO.save_json("data/mod/settings.json", self.settings)
+            dataIO.save_json("data/modenhanced/settings.json", self.settings)
             await self.bot.say("Toggled spamdelete.")
             return
         self.settings["spamdelete"] = True
-        dataIO.save_json("data/mod/settings.json", self.settings)
+        dataIO.save_json("data/modenhanced/settings.json", self.settings)
         await self.bot.say("Toggled spamdelete.")
 
     @modset.command(name="serverid", pass_context=True)
     async def serverid(self, ctx, id: str):
         """Sets the Serverid of this server."""
         self.settings["serverid"] = id
-        dataIO.save_json("data/mod/settings.json", self.settings)
+        dataIO.save_json("data/modenhanced/settings.json", self.settings)
         await self.bot.say("Saved the serverid.")
 
     @modset.command(name="addrule", pass_context=True)
@@ -106,7 +106,7 @@ class Modenhanced:
         """Add Server rules."""
         self.rules[id] = {}
         self.rules[id] = rule
-        dataIO.save_json("data/mod/rules.json", self.rules)
+        dataIO.save_json("data/modenhanced/rules.json", self.rules)
         await self.bot.say("Saved the rule.")
 
     @modset.command(name="adminrole", pass_context=True, no_pm=True)
@@ -143,7 +143,7 @@ class Modenhanced:
                 return
             self.settings[server.id]["mod-log"] = None
             await self.bot.say("Mod log deactivated.")
-        dataIO.save_json("data/mod/settings.json", self.settings)
+        dataIO.save_json("data/modenhanced/settings.json", self.settings)
 
     @modset.command(name ="intmodch", pass_context=True, no_pm=True)
     async def internalmodchannel(self, ctx, channel: discord.Channel = None):
@@ -161,7 +161,7 @@ class Modenhanced:
                 return
             self.settings[server.id]["int-mod-log"] = None
             await self.bot.say("Mod log deactivated.")
-        dataIO.save_json("data/mod/settings.json", self.settings)
+        dataIO.save_json("data/modenhanced/settings.json", self.settings)
 
     @modset.command(pass_context=True, no_pm=True)
     async def banmentionspam(self, ctx, max_mentions : int=False):
@@ -183,7 +183,7 @@ class Modenhanced:
                 return
             self.settings[server.id]["ban_mention_spam"] = False
             await self.bot.say("Autoban for mention spam disabled.")
-        dataIO.save_json("data/mod/settings.json", self.settings)
+        dataIO.save_json("data/modenhanced/settings.json", self.settings)
 
     @modset.command(pass_context=True, no_pm=True)
     async def deleterepeats(self, ctx):
@@ -196,14 +196,14 @@ class Modenhanced:
         else:
             self.settings[server.id]["delete_repeats"] = False
             await self.bot.say("Repeated messages will be ignored.")
-        dataIO.save_json("data/mod/settings.json", self.settings)
+        dataIO.save_json("data/modenhanced/settings.json", self.settings)
 
     @modset.command(pass_context=True, no_pm=True)
     async def resetcases(self, ctx):
         """Resets modlog's cases"""
         server = ctx.message.server
         self.cases[server.id] = {}
-        dataIO.save_json("data/mod/modlog.json", self.cases)
+        dataIO.save_json("data/modenhanced/modlog.json", self.cases)
         await self.bot.say("Cases have been reset.")
 
     @commands.command(no_pm=True, pass_context=True)
@@ -568,7 +568,7 @@ class Modenhanced:
         """Adds user to bot's blacklist"""
         if user.id not in self.blacklist_list:
             self.blacklist_list.append(user.id)
-            dataIO.save_json("data/mod/blacklist.json", self.blacklist_list)
+            dataIO.save_json("data/modenhanced/blacklist.json", self.blacklist_list)
             await self.bot.say("User has been added to blacklist.")
         else:
             await self.bot.say("User is already blacklisted.")
@@ -578,7 +578,7 @@ class Modenhanced:
         """Removes user from bot's blacklist"""
         if user.id in self.blacklist_list:
             self.blacklist_list.remove(user.id)
-            dataIO.save_json("data/mod/blacklist.json", self.blacklist_list)
+            dataIO.save_json("data/modenhanced/blacklist.json", self.blacklist_list)
             await self.bot.say("User has been removed from blacklist.")
         else:
             await self.bot.say("User is not in blacklist.")
@@ -587,7 +587,7 @@ class Modenhanced:
     async def _blacklist_clear(self):
         """Clears the blacklist"""
         self.blacklist_list = []
-        dataIO.save_json("data/mod/blacklist.json", self.blacklist_list)
+        dataIO.save_json("data/modenhanced/blacklist.json", self.blacklist_list)
         await self.bot.say("Blacklist is now empty.")
 
     @commands.group(pass_context=True)
@@ -606,7 +606,7 @@ class Modenhanced:
             else:
                 msg = ""
             self.whitelist_list.append(user.id)
-            dataIO.save_json("data/mod/whitelist.json", self.whitelist_list)
+            dataIO.save_json("data/modenhanced/whitelist.json", self.whitelist_list)
             await self.bot.say("User has been added to whitelist." + msg)
         else:
             await self.bot.say("User is already whitelisted.")
@@ -616,7 +616,7 @@ class Modenhanced:
         """Removes user from bot's whitelist"""
         if user.id in self.whitelist_list:
             self.whitelist_list.remove(user.id)
-            dataIO.save_json("data/mod/whitelist.json", self.whitelist_list)
+            dataIO.save_json("data/modenhanced/whitelist.json", self.whitelist_list)
             await self.bot.say("User has been removed from whitelist.")
         else:
             await self.bot.say("User is not in whitelist.")
@@ -625,7 +625,7 @@ class Modenhanced:
     async def _whitelist_clear(self):
         """Clears the whitelist"""
         self.whitelist_list = []
-        dataIO.save_json("data/mod/whitelist.json", self.whitelist_list)
+        dataIO.save_json("data/modenhanced/whitelist.json", self.whitelist_list)
         await self.bot.say("Whitelist is now empty.")
 
     @commands.group(pass_context=True, no_pm=True)
@@ -645,14 +645,14 @@ class Modenhanced:
         if not channel:
             if current_ch.id not in self.ignore_list["CHANNELS"]:
                 self.ignore_list["CHANNELS"].append(current_ch.id)
-                dataIO.save_json("data/mod/ignorelist.json", self.ignore_list)
+                dataIO.save_json("data/modenhanced/ignorelist.json", self.ignore_list)
                 await self.bot.say("Channel added to ignore list.")
             else:
                 await self.bot.say("Channel already in ignore list.")
         else:
             if channel.id not in self.ignore_list["CHANNELS"]:
                 self.ignore_list["CHANNELS"].append(channel.id)
-                dataIO.save_json("data/mod/ignorelist.json", self.ignore_list)
+                dataIO.save_json("data/modenhanced/ignorelist.json", self.ignore_list)
                 await self.bot.say("Channel added to ignore list.")
             else:
                 await self.bot.say("Channel already in ignore list.")
@@ -663,7 +663,7 @@ class Modenhanced:
         server = ctx.message.server
         if server.id not in self.ignore_list["SERVERS"]:
             self.ignore_list["SERVERS"].append(server.id)
-            dataIO.save_json("data/mod/ignorelist.json", self.ignore_list)
+            dataIO.save_json("data/modenhanced/ignorelist.json", self.ignore_list)
             await self.bot.say("This server has been added to the ignore list.")
         else:
             await self.bot.say("This server is already being ignored.")
@@ -685,14 +685,14 @@ class Modenhanced:
         if not channel:
             if current_ch.id in self.ignore_list["CHANNELS"]:
                 self.ignore_list["CHANNELS"].remove(current_ch.id)
-                dataIO.save_json("data/mod/ignorelist.json", self.ignore_list)
+                dataIO.save_json("data/modenhanced/ignorelist.json", self.ignore_list)
                 await self.bot.say("This channel has been removed from the ignore list.")
             else:
                 await self.bot.say("This channel is not in the ignore list.")
         else:
             if channel.id in self.ignore_list["CHANNELS"]:
                 self.ignore_list["CHANNELS"].remove(channel.id)
-                dataIO.save_json("data/mod/ignorelist.json", self.ignore_list)
+                dataIO.save_json("data/modenhanced/ignorelist.json", self.ignore_list)
                 await self.bot.say("Channel removed from ignore list.")
             else:
                 await self.bot.say("That channel is not in the ignore list.")
@@ -703,7 +703,7 @@ class Modenhanced:
         server = ctx.message.server
         if server.id in self.ignore_list["SERVERS"]:
             self.ignore_list["SERVERS"].remove(server.id)
-            dataIO.save_json("data/mod/ignorelist.json", self.ignore_list)
+            dataIO.save_json("data/modenhanced/ignorelist.json", self.ignore_list)
             await self.bot.say("This server has been removed from the ignore list.")
         else:
             await self.bot.say("This server is not in the ignore list.")
@@ -716,7 +716,7 @@ class Modenhanced:
                     hours=duration)
                 self.mutes[member.id]['time'] = cooldown.strftime('%Y-%m-%d %H:%M')
                 self.mutes[member.id]['reason'] = reason
-                dataIO.save_json("data/mod/mutes.json",
+                dataIO.save_json("data/modenhanced/mutes.json",
                                  self.mutes)
                 role = discord.utils.get(ctx.message.server.roles, name='Muted')
                 await self.bot.add_roles(member, role)
@@ -726,7 +726,7 @@ class Modenhanced:
                     hours=duration)
                 self.mutes[member.id]['time'] = cooldown.strftime('%Y-%m-%d %H:%M')
                 self.mutes[member.id]['reason'] = reason
-                dataIO.save_json("data/mod/mutes.json",
+                dataIO.save_json("data/modenhanced/mutes.json",
                                  self.mutes)
                 role = discord.utils.get(ctx.message.server.roles, name='Muted')
                 await self.bot.add_roles(member, role)
@@ -737,7 +737,7 @@ class Modenhanced:
                     minutes=duration)
                 self.mutes[member.id]['time'] = cooldown.strftime('%Y-%m-%d %H:%M')
                 self.mutes[member.id]['reason'] = reason
-                dataIO.save_json("data/mod/mutes.json",
+                dataIO.save_json("data/modenhanced/mutes.json",
                                  self.mutes)
                 role = discord.utils.get(ctx.message.server.roles, name='Muted')
                 await self.bot.add_roles(member, role)
@@ -747,7 +747,7 @@ class Modenhanced:
                     minutes=duration)
                 self.mutes[member.id]['time'] = cooldown.strftime('%Y-%m-%d %H:%M')
                 self.mutes[member.id]['reason'] = reason
-                dataIO.save_json("data/mod/mutes.json",
+                dataIO.save_json("data/modenhanced/mutes.json",
                                  self.mutes)
                 role = discord.utils.get(ctx.message.server.roles, name='Muted')
                 await self.bot.add_roles(member, role)
@@ -760,7 +760,7 @@ class Modenhanced:
                     hours=duration)
                 self.mutes[member.id]['time'] = cooldown.strftime('%Y-%m-%d %H:%M')
                 self.mutes[member.id]['reason'] = reason
-                dataIO.save_json("data/mod/mutes.json",
+                dataIO.save_json("data/modenhanced/mutes.json",
                                  self.mutes)
                 role = discord.utils.get(member.server.roles, name='Muted')
                 await self.bot.add_roles(member, role)
@@ -770,7 +770,7 @@ class Modenhanced:
                     hours=duration)
                 self.mutes[member.id]['time'] = cooldown.strftime('%Y-%m-%d %H:%M')
                 self.mutes[member.id]['reason'] = reason
-                dataIO.save_json("data/mod/mutes.json",
+                dataIO.save_json("data/modenhanced/mutes.json",
                                  self.mutes)
                 role = discord.utils.get(member.server.roles, name='Muted')
                 await self.bot.add_roles(member, role)
@@ -782,7 +782,7 @@ class Modenhanced:
                     minutes=duration)
                 self.mutes[member.id]['time'] = cooldown.strftime('%Y-%m-%d %H:%M')
                 self.mutes[member.id]['reason'] = reason
-                dataIO.save_json("data/mod/mutes.json",
+                dataIO.save_json("data/modenhanced/mutes.json",
                                  self.mutes)
                 role = discord.utils.get(member.server.roles, name='Muted')
                 await self.bot.add_roles(member, role)
@@ -792,7 +792,7 @@ class Modenhanced:
                     minutes=duration)
                 self.mutes[member.id]['time'] = cooldown.strftime('%Y-%m-%d %H:%M')
                 self.mutes[member.id]['reason'] = reason
-                dataIO.save_json("data/mod/mutes.json",
+                dataIO.save_json("data/modenhanced/mutes.json",
                                  self.mutes)
                 role = discord.utils.get(member.server.roles, name='Muted')
                 await self.bot.add_roles(member, role)
@@ -852,7 +852,7 @@ class Modenhanced:
             self.filter[server.id][word]["unit"] = unit;
             added += 1
         if added:
-            dataIO.save_json("data/mod/filter.json", self.filter)
+            dataIO.save_json("data/modenhanced/filter.json", self.filter)
             await self.bot.say("Words added to filter.")
         else:
             await self.bot.say("Words already in the filter.")
@@ -878,7 +878,7 @@ class Modenhanced:
                 del self.filter[server.id][w]
                 removed += 1
         if removed:
-            dataIO.save_json("data/mod/filter.json", self.filter)
+            dataIO.save_json("data/modenhanced/filter.json", self.filter)
             await self.bot.say("Words removed from filter.")
         else:
             await self.bot.say("Those words weren't in the filter.")
@@ -997,7 +997,7 @@ class Modenhanced:
                         msg += temporeason
                         msg += "\n"
                 await self.appendinternal(msg, member.server)
-            dataIO.save_json("data/mod/warnings.json", self.warnings)
+            dataIO.save_json("data/modenhanced/warnings.json", self.warnings)
         except KeyError:
             ts = datetime.datetime.now().strftime('%Y-%m-%d')
             self.warnings[member.id] = {}
@@ -1018,7 +1018,7 @@ class Modenhanced:
                         "If your account reaches 3 warning points, it will be reviewed by the staff team.\n"
                         "For a complete list of " + ctx.message.server.name + " rules, please see the #intro channel\n")
             await self.bot.send_message(member, message)
-            dataIO.save_json("data/mod/warnings.json", self.warnings)
+            dataIO.save_json("data/modenhanced/warnings.json", self.warnings)
         #await self.bot.send_message(ctx.message.author, "das ist ein test")
 
     @commands.command(name="warnlist", pass_context=True)
@@ -1121,7 +1121,7 @@ class Modenhanced:
         if mod:
             self.last_case[server.id][mod.id] = case_n
 
-        dataIO.save_json("data/mod/modlog.json", self.cases)
+        dataIO.save_json("data/modenhanced/modlog.json", self.cases)
 
     async def update_case(self, server, *, case, mod, reason):
         channel = server.get_channel(self.settings[server.id]["mod-log"])
@@ -1145,7 +1145,7 @@ class Modenhanced:
                     "**Reason:** {reason}"
                     "".format(**case))
 
-        dataIO.save_json("data/mod/modlog.json", self.cases)
+        dataIO.save_json("data/modenhanced/modlog.json", self.cases)
 
         msg = await self.bot.get_message(channel, case["message"])
         if msg:
@@ -1267,7 +1267,7 @@ class Modenhanced:
         CHECK_DELAY = 60
         while self == self.bot.get_cog("Mod"):
             currenttime = datetime.datetime.now()
-            self.mutes = dataIO.load_json("data/mod/mutes.json")
+            self.mutes = dataIO.load_json("data/modenhanced/mutes.json")
             for mute in self.mutes:
                 if currenttime > datetime.datetime.strptime(self.mutes[mute]['time'], '%Y-%m-%d %H:%M'):
                     mydict = {k: v for k, v in self.mutes.items() if k != mute}
@@ -1275,7 +1275,7 @@ class Modenhanced:
                     member = server.get_member(mute)
                     role = discord.utils.get(member.server.roles, name='Muted')
                     await self.bot.remove_roles(member, role)
-                    dataIO.save_json("data/mod/mutes.json", mydict)
+                    dataIO.save_json("data/modenhanced/mutes.json", mydict)
                     await self.appendmodlog("Unmuted " + member.name,member.server)
             await asyncio.sleep(CHECK_DELAY)
 
@@ -1288,7 +1288,7 @@ class Modenhanced:
                     names = deque(self.past_names[before.id], maxlen=20)
                     names.append(after.name)
                     self.past_names[before.id] = list(names)
-            dataIO.save_json("data/mod/past_names.json", self.past_names)
+            dataIO.save_json("data/modenhanced/past_names.json", self.past_names)
 
         if before.nick != after.nick and after.nick is not None:
             server = before.server
@@ -1302,7 +1302,7 @@ class Modenhanced:
             if after.nick not in nicks:
                 nicks.append(after.nick)
                 self.past_nicknames[server.id][before.id] = list(nicks)
-                dataIO.save_json("data/mod/past_nicknames.json",
+                dataIO.save_json("data/modenhanced/past_nicknames.json",
                                  self.past_nicknames)
 
     async def appendmodlog(self, msg:str,server):
@@ -1325,7 +1325,7 @@ class Modenhanced:
 
 
 def check_folders():
-    folders = ("data", "data/mod/")
+    folders = ("data", "data/modenhanced/")
     for folder in folders:
         if not os.path.exists(folder):
             print("Creating " + folder + " folder...")
@@ -1335,49 +1335,49 @@ def check_folders():
 def check_files():
     ignore_list = {"SERVERS": [], "CHANNELS": []}
 
-    if not os.path.isfile("data/mod/mutes.json"):
+    if not os.path.isfile("data/modenhanced/mutes.json"):
         print("Creating empty mutes.json...")
-        dataIO.save_json("data/mod/mutes.json", {})
+        dataIO.save_json("data/modenhanced/mutes.json", {})
 
-    if not os.path.isfile("data/mod/blacklist.json"):
+    if not os.path.isfile("data/modenhanced/blacklist.json"):
         print("Creating empty blacklist.json...")
-        dataIO.save_json("data/mod/blacklist.json", [])
+        dataIO.save_json("data/modenhanced/blacklist.json", [])
 
-    if not os.path.isfile("data/mod/whitelist.json"):
+    if not os.path.isfile("data/modenhanced/whitelist.json"):
         print("Creating empty whitelist.json...")
-        dataIO.save_json("data/mod/whitelist.json", [])
+        dataIO.save_json("data/modenhanced/whitelist.json", [])
 
-    if not os.path.isfile("data/mod/ignorelist.json"):
+    if not os.path.isfile("data/modenhanced/ignorelist.json"):
         print("Creating empty ignorelist.json...")
-        dataIO.save_json("data/mod/ignorelist.json", ignore_list)
+        dataIO.save_json("data/modenhanced/ignorelist.json", ignore_list)
 
-    if not os.path.isfile("data/mod/filter.json"):
+    if not os.path.isfile("data/modenhanced/filter.json"):
         print("Creating empty filter.json...")
-        dataIO.save_json("data/mod/filter.json", {})
+        dataIO.save_json("data/modenhanced/filter.json", {})
 
-    if not os.path.isfile("data/mod/past_names.json"):
+    if not os.path.isfile("data/modenhanced/past_names.json"):
         print("Creating empty past_names.json...")
-        dataIO.save_json("data/mod/past_names.json", {})
+        dataIO.save_json("data/modenhanced/past_names.json", {})
 
-    if not os.path.isfile("data/mod/past_nicknames.json"):
+    if not os.path.isfile("data/modenhanced/past_nicknames.json"):
         print("Creating empty past_nicknames.json...")
-        dataIO.save_json("data/mod/past_nicknames.json", {})
+        dataIO.save_json("data/modenhanced/past_nicknames.json", {})
 
-    if not os.path.isfile("data/mod/settings.json"):
+    if not os.path.isfile("data/modenhanced/settings.json"):
         print("Creating empty settings.json...")
-        dataIO.save_json("data/mod/settings.json", {})
+        dataIO.save_json("data/modenhanced/settings.json", {})
 
-    if not os.path.isfile("data/mod/modlog.json"):
+    if not os.path.isfile("data/modenhanced/modlog.json"):
         print("Creating empty modlog.json...")
-        dataIO.save_json("data/mod/modlog.json", {})
+        dataIO.save_json("data/modenhanced/modlog.json", {})
 
-    if not os.path.isfile("data/mod/warnings.json"):
+    if not os.path.isfile("data/modenhanced/warnings.json"):
         print("Creating empty warnings.json...")
-        dataIO.save_json("data/mod/warnings.json", {})
+        dataIO.save_json("data/modenhanced/warnings.json", {})
 
-    if not os.path.isfile("data/mod/rules.json"):
+    if not os.path.isfile("data/modenhanced/rules.json"):
         print("Creating empty rules.json...")
-        dataIO.save_json("data/mod/rules.json", {})
+        dataIO.save_json("data/modenhanced/rules.json", {})
 
 
 def setup(bot):
@@ -1389,11 +1389,11 @@ def setup(bot):
     if logger.level == 0:
         logger.setLevel(logging.INFO)
         handler = logging.FileHandler(
-            filename='data/mod/mod.log', encoding='utf-8', mode='a')
+            filename='data/modenhanced/mod.log', encoding='utf-8', mode='a')
         handler.setFormatter(
             logging.Formatter('%(asctime)s %(message)s', datefmt="[%d/%m/%Y %H:%M]"))
         logger.addHandler(handler)
-    n = Modenhanced(bot)
+    n = Mod(bot)
     bot.add_listener(n.check_names, "on_member_update")
     loop = asyncio.get_event_loop()
     loop.create_task(n.mute_check())
