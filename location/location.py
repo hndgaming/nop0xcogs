@@ -37,15 +37,17 @@ class countrycode:
         easter = "shithole";
 
         if countryobj is not None:
+            count = 0;
             if subregionobj is not None:
-                msg = "All members for " + countryobj.name + ": " + subregionobj.name + " :flag_" + countryobj.alpha2.lower() + ":\n```"
+                msg = "Number of members for " + countryobj.name + ": " + subregionobj.name + " :flag_" + countryobj.alpha2.lower() + ": `"
                 try:
                     for member in server._members:
                         for role in server._members[member].roles:
                             if subregionobj.code == role.name:
-                                msg = msg + "\n• " + server._members[member].name
-                    msg = msg + "```"
-                    if msg != "All members for " + countryobj.name + ": " + subregionobj.name + " :flag_" + countryobj.alpha2.lower().lower() + ":\n``````":
+                                count += 1;
+                                #msg = msg + "\n• " + server._members[member].name
+                    msg = msg + str(count) +  "`"
+                    if msg != "Number of members for " + countryobj.name + ": " + subregionobj.name + " :flag_" + countryobj.alpha2.lower().lower() + ": ``":
                         await self.bot.say(msg)
                     else:
                         await self.bot.say(
@@ -53,14 +55,15 @@ class countrycode:
                 except:
                     await self.bot.say("w00ps, something went wrong! :( Please try again.")
             else:
-                msg = "All members for " + countryobj.name + " :flag_"+ countryobj.alpha2.lower() +":\n```"
+                msg = "Number of members for " + countryobj.name + " :flag_"+ countryobj.alpha2.lower() +": `"
                 try:
                     for member in server._members:
                         for role in server._members[member].roles:
                             if countryobj.name == role.name:
-                                msg = msg + "\n• " + server._members[member].name
-                    msg = msg + "```"
-                    if msg != "All members for " + countryobj.name + " :flag_"+ countryobj.alpha2.lower() +":\n``````":
+                                count += 1;
+                                #msg = msg + "\n• " + server._members[member].name
+                    msg = msg + str(count) + "`"
+                    if msg != "Number of members for " + countryobj.name + " :flag_"+ countryobj.alpha2.lower() +": ``":
                         await self.bot.say(msg)
                     else:
                         await self.bot.say("No one found in " + countryobj.name + " :flag_"+ countryobj.alpha2.lower() +": :(")
