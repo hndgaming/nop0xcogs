@@ -279,6 +279,6 @@ def setup(bot):
         raise RuntimeError("Run `pip install tabulate` to use Karma.")
     check_folder()
     check_file()
-    n = Karma(bot)
+    n = Karmaenhanced(bot)
     bot.add_listener(n.check_for_score, "on_message")
     bot.add_cog(n)
