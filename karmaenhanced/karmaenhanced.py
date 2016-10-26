@@ -143,7 +143,10 @@ class Karmaenhanced:
     @karmaset.command(pass_context=True, name="list")
     async def _karmaset_cooldown(self, ctx, lenght:int=10):
         """Sets the lenght of the -karmaboard command. Defaults to 10."""
-        self.settings['lenght'] = lenght
+        try:
+            self.settings['lenght'] = lenght
+        except KeyError:
+            self.settings['lenght'] = {}
         fileIO('data/karmaenhanced/settings.json', 'save', self.settings)
 
     @karmaset.command(pass_context=True, name="cooldown")
