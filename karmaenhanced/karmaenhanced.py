@@ -149,7 +149,7 @@ class Karmaenhanced:
         except KeyError:
             self.settings['lenght'] = {}
             self.settings['lenght'] = lenght
-        fileIO('data/karma/settings.json', 'save', self.settings)
+        fileIO('data/karmaenhanced/settings.json', 'save', self.settings)
 
     @karmaset.command(pass_context=True, name="cooldown")
     async def _karmaset_cooldown(self, ctx, role: str, cooldown:int):
