@@ -26,7 +26,6 @@ class Karmaenhanced:
         self.scores = fileIO("data/karmaenhanced/scores.json", "load")
         self.settings = fileIO("data/karmaenhanced/settings.json", 'load')
         self.cooldown = fileIO("data/karmaenhanced/cooldown.json", 'load')
-        self.settings['roles'] = {}
 
     def _process_scores(self, member, score_to_add):
         member_id = member.id
