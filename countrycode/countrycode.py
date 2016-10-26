@@ -24,6 +24,8 @@ class countrycode:
         rg = re.compile(re1 + re2 + re3, re.IGNORECASE | re.DOTALL)
 
         m = rg.search(country)
+        if(country.upper() == 'NA'):
+            country = 'US'
         subregionobj = None
         try:
             if m:
