@@ -16,7 +16,7 @@ except:
 log = logging.getLogger("red.karma")
 
 
-class Karma:
+class Karmaenhanced:
     """Keep track of user scores through @mention ++/--
 
     Example: ++ @\u200BWill (or @\u200BWill ++)"""
@@ -66,13 +66,14 @@ class Karma:
             for role in self.settings['roles']:
                 if role in [r.name for r in user.roles] and role is not '@everyone':
                     cooldown = datetime.datetime.now() + datetime.timedelta(
-                        hours=self.settings['roles'][role]['cooldown'])
+                        minutes=self.settings['roles'][role]['cooldown'])
+                    self.cooldown[user.id] = {}
                     self.cooldown[user.id]['cooldown'] = cooldown.strftime('%Y-%m-%d %H:%M')
                     fileIO('data/karma/cooldown.json', 'save', self.cooldown)
                     return True
             if role in [r.name for r in user.roles] is '@everyone':
                 self.cooldown[user.id]['cooldown'] = str(datetime.datetime.now() + datetime.timedelta(
-                    hours=self.settings['roles']['@everyone']['cooldown']))
+                    minutes=self.settings['roles']['@everyone']['cooldown']))
                 fileIO('data/karma/cooldown.json', 'save', self.cooldown)
                 return True
         #except:
@@ -147,7 +148,11 @@ class Karma:
 
     @karmaset.command(pass_context=True, name="cooldown")
     async def _karmaset_cooldown(self, ctx, role: str, cooldown:int):
-        """Toggles if bot will respond when points get added/removed"""
+        """Set the cooldown per Role for karma. (in Minutes)"""
+        try:
+            self.settings['roles'][role] = {}
+        except KeyError:
+            self.settings['roles'] = {}
         self.settings['roles'][role] = {}
         if self.settings['roles'][role] is not None:
             self.settings['roles'][role]['allowed'] = True
@@ -218,14 +223,23 @@ class Karma:
         if '@everyone' in [r.name for r in user.roles]:
             if self.settings['roles']['@everyone']['allowed'] is False:
                 for role in self.settings['roles']:
-                    if role in [r.name for r in user.roles] and role is not '@everyone':
+                    if role in [r.name for r in user.roles] and role != '@everyone':
                         if self.settings['roles'][role]['allowed'] is False:
-                            await self.bot.send_message(channel, "You can't change karmapoints right now.")
+                            timecalc = datetime.datetime.strptime(self.cooldown[user.id]['cooldown'], '%Y-%m-%d %H:%M') - currenttime
+                            await self.bot.send_message(channel, "You can't change karmapoints right now." + str(timecalc))
                             return False
         try:
-            if currenttime <  datetime.datetime.strptime(self.cooldown[user.id]['cooldown'], '%Y-%m-%d %H:%M'):
-                await self.bot.send_message(channel, "You can't change karmapoints right now.")
+            if currenttime < datetime.datetime.strptime(self.cooldown[user.id]['cooldown'], '%Y-%m-%d %H:%M'):
+                timecalc = datetime.datetime.strptime(self.cooldown[user.id]['cooldown'],
+                                                                    '%Y-%m-%d %H:%M') - currenttime
+                time = datetime.datetime.strptime(str(timecalc),'%H:%M:%S.%f')
+                await self.bot.send_message(channel, "You can't change karmapoints right now. Try again in "
+                                            + str(datetime.datetime.strftime(time,'%H:%M')))
                 return False
+            elif currenttime > datetime.datetime.strptime(self.cooldown[user.id]['cooldown'], '%Y-%m-%d %H:%M'):
+                del(self.cooldown[user.id])
+                fileIO('data/karma/cooldown.json', 'save', self.cooldown)
+                return True
             else:
                 return True
         except KeyError:
