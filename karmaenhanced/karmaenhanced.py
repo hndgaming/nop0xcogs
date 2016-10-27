@@ -13,7 +13,7 @@ except:
     tabulate = None
 
 
-log = logging.getLogger("red.karmaenhanced")
+log = logging.getLogger("red.karma")
 
 
 class Karmaenhanced:
@@ -26,7 +26,6 @@ class Karmaenhanced:
         self.scores = fileIO("data/karmaenhanced/scores.json", "load")
         self.settings = fileIO("data/karmaenhanced/settings.json", 'load')
         self.cooldown = fileIO("data/karmaenhanced/cooldown.json", 'load')
-        self.settings['roles'] = {}
 
     def _process_scores(self, member, score_to_add):
         member_id = member.id
@@ -64,14 +63,14 @@ class Karmaenhanced:
     def _set_cooldown(self,user):
         #try:
             for role in self.settings['roles']:
-                if role in [r.name for r in user.roles] and role is not '@everyone':
+                if role in [r.name for r in user.roles] and role != '@everyone':
                     cooldown = datetime.datetime.now() + datetime.timedelta(
                         minutes=self.settings['roles'][role]['cooldown'])
                     self.cooldown[user.id] = {}
                     self.cooldown[user.id]['cooldown'] = cooldown.strftime('%Y-%m-%d %H:%M')
                     fileIO('data/karmaenhanced/cooldown.json', 'save', self.cooldown)
                     return True
-            if role in [r.name for r in user.roles] is '@everyone':
+            if role in [r.name for r in user.roles] == '@everyone':
                 self.cooldown[user.id]['cooldown'] = str(datetime.datetime.now() + datetime.timedelta(
                     minutes=self.settings['roles']['@everyone']['cooldown']))
                 fileIO('data/karmaenhanced/cooldown.json', 'save', self.cooldown)
@@ -83,9 +82,9 @@ class Karmaenhanced:
 
     @commands.command(pass_context=True)
     async def karma(self, ctx):
-        """Checks a user's karmaenhanced, requires @ mention
+        """Checks a user's karma, requires @ mention
 
-           Example: !karmaenhanced @Red"""
+           Example: !karma @Red"""
         if len(ctx.message.mentions) != 1:
             await send_cmd_help(ctx)
             return
@@ -98,7 +97,7 @@ class Karmaenhanced:
             if reasons:
                 await self.bot.send_message(ctx.message.author, reasons)
         else:
-            await self.bot.say(member.name + " has no karmaenhanced!")
+            await self.bot.say(member.name + " has no karma!")
 
     @commands.command(pass_context=True)
     async def karmaboard(self, ctx):
@@ -124,7 +123,7 @@ class Karmaenhanced:
     @commands.group(pass_context=True)
     @checks.mod_or_permissions(manage_messages=True)
     async def karmaset(self, ctx):
-        """Manage karmaenhanced settings"""
+        """Manage karma settings"""
         if ctx.invoked_subcommand is None:
             await send_cmd_help(ctx)
             return
@@ -153,7 +152,7 @@ class Karmaenhanced:
 
     @karmaset.command(pass_context=True, name="cooldown")
     async def _karmaset_cooldown(self, ctx, role: str, cooldown:int):
-        """Set the cooldown per Role for karmaenhanced. (in Minutes)"""
+        """Set the cooldown per Role for karma. (in Minutes)"""
         try:
             self.settings['roles'][role] = {}
         except KeyError:
@@ -165,7 +164,7 @@ class Karmaenhanced:
             await self.bot.say("Cooldown set.")
         if cooldown is -1:
             self.settings['roles'][role]['allowed'] = False
-            await self.bot.say("Disabled karmaenhanced for Role " + role)
+            await self.bot.say("Disabled karma for Role " + role)
         fileIO('data/karmaenhanced/settings.json', 'save', self.settings)
 
     async def check_for_score(self, message):
@@ -255,7 +254,7 @@ class Karmaenhanced:
 
 def check_folder():
     if not os.path.exists("data/karmaenhanced"):
-        print("Creating data/karmaenhanced folder...")
+        print("Creating data/karma folder...")
         os.makedirs("data/karmaenhanced")
 
 
@@ -265,17 +264,17 @@ def check_file():
 
     f = "data/karmaenhanced/scores.json"
     if not fileIO(f, "check"):
-        print("Creating default karmaenhanced's scores.json...")
+        print("Creating default karma's scores.json...")
         fileIO(f, "save", scores)
 
     f = "data/karmaenhanced/cooldown.json"
     if not fileIO(f, "check"):
-        print("Creating default karmaenhanced's cooldown.json...")
+        print("Creating default karma's cooldown.json...")
         fileIO(f, "save", {})
 
     f = "data/karmaenhanced/settings.json"
     if not fileIO(f, "check"):
-        print("Creating default karmaenhanced's scores.json...")
+        print("Creating default karma's scores.json...")
         fileIO(f, "save", settings)
 
 
