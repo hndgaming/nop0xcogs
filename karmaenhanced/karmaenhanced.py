@@ -207,6 +207,12 @@ class Karmaenhanced:
                         if self._set_cooldown(user):
                             self._process_scores(member, 1)
                             self._add_reason(member.id, reason)
+                            if self.settings['RESPOND_ON_POINT']:
+                                msg = "{} now has {} points.".format(
+                                    member.name, self.scores[member.id]["score"])
+                                await self.bot.send_message(message.channel, msg)
+                            fileIO("data/karmaenhanced/scores.json", "save", self.scores)
+                            return
                         else:
                             await self.bot.send_message(message.channel,
                                                         "Error setting the cooldown or the role cooldown is not set up.")
@@ -217,18 +223,19 @@ class Karmaenhanced:
                         if self._set_cooldown(user):
                             self._process_scores(member, -1)
                             self._add_reason(member.id, reason)
+                            if self.settings['RESPOND_ON_POINT']:
+                                msg = "{} now has {} points.".format(
+                                    member.name, self.scores[member.id]["score"])
+                                await self.bot.send_message(message.channel, msg)
+                            fileIO("data/karmaenhanced/scores.json", "save", self.scores)
+                            return
                         else:
                             await self.bot.send_message(message.channel,
                                                         "Error setting the cooldown or the role cooldown is not set up.")
                     else:
                         return
 
-                if self.settings['RESPOND_ON_POINT']:
-                    msg = "{} now has {} points.".format(
-                        member.name, self.scores[member.id]["score"])
-                    await self.bot.send_message(message.channel, msg)
-                fileIO("data/karmaenhanced/scores.json", "save", self.scores)
-                return
+
 
     async def check_day(self):
         currentday = str(datetime.datetime.strftime(datetime.datetime.now(),'%m-%d'))
