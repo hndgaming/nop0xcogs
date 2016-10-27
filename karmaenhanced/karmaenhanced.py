@@ -157,7 +157,7 @@ class Karmaenhanced:
             self.settings['roles'][role] = {}
         except KeyError:
             self.settings['roles'] = {}
-        self.settings['roles'][role] = {}
+            self.settings['roles'][role] = {}
         if self.settings['roles'][role] is not None:
             self.settings['roles'][role]['allowed'] = True
             self.settings['roles'][role]['cooldown'] = cooldown
