@@ -281,6 +281,7 @@ class Karmaenhanced:
         except KeyError:
             self.cooldown[user.id] = {}
             self.cooldown[user.id]['cooldown'] = datetime.datetime.now()
+            fileIO('data/karmaenhanced/cooldown.json', 'save', self.cooldown)
             return True
 
 
