@@ -1,5 +1,7 @@
 import discord
 from discord.ext import commands
+
+from cogs.utils.dataIO import *
 from cogs.utils.dataIO import fileIO
 from cogs.utils.chat_formatting import box
 from cogs.utils import checks
@@ -71,11 +73,12 @@ class Karmaenhanced:
                     self.cooldown[user.id]['cooldown'] = cooldown.strftime('%Y-%m-%d %H:%M')
                     fileIO('data/karmaenhanced/cooldown.json', 'save', self.cooldown)
                     return True
-            if role in [r.name for r in user.roles] == '@everyone':
-                self.cooldown[user.id]['cooldown'] = str(datetime.datetime.now() + datetime.timedelta(
-                    minutes=self.settings['roles']['@everyone']['cooldown']))
-                fileIO('data/karmaenhanced/cooldown.json', 'save', self.cooldown)
-                return True
+                if role == '@everyone':
+                    self.cooldown[user.id] = {}
+                    self.cooldown[user.id]['cooldown'] = str(datetime.datetime.now() + datetime.timedelta(
+                        minutes=self.settings['roles']['@everyone']['cooldown']))
+                    fileIO('data/karmaenhanced/cooldown.json', 'save', self.cooldown)
+                    return True
         #except:
             #return False
 
@@ -147,7 +150,7 @@ class Karmaenhanced:
             await self.bot.say('Responses enabled.')
         self.settings['RESPOND_ON_POINT'] = \
             not self.settings['RESPOND_ON_POINT']
-        fileIO('data/karmaenhanced/settings.json', 'save', self.settings)
+        dataIO.save_json('data/karmaenhanced/settings.json', self.settings)
 
     @karmaset.command(pass_context=True, name="list")
     async def _karmaset_list(self, ctx, lenght:int=10):
@@ -158,7 +161,7 @@ class Karmaenhanced:
         except KeyError:
             self.settings['lenght'] = {}
             self.settings['lenght'] = lenght
-        fileIO('data/karmaenhanced/settings.json', 'save', self.settings)
+        dataIO.save_json('data/karmaenhanced/settings.json', self.settings)
 
     @karmaset.command(pass_context=True, name="cooldown")
     async def _karmaset_cooldown(self, ctx, role: str, cooldown:int):
@@ -175,7 +178,7 @@ class Karmaenhanced:
         if cooldown is -1:
             self.settings['roles'][role]['allowed'] = False
             await self.bot.say("Disabled karma for Role " + role)
-        fileIO('data/karmaenhanced/settings.json', 'save', self.settings)
+        dataIO.save_json('data/karmaenhanced/settings.json', self.settings)
 
     async def check_for_score(self, message):
         user = message.author
@@ -211,7 +214,7 @@ class Karmaenhanced:
                                 msg = "{} now has {} points.".format(
                                     member.name, self.scores[member.id]["score"])
                                 await self.bot.send_message(message.channel, msg)
-                            fileIO("data/karmaenhanced/scores.json", "save", self.scores)
+                            dataIO.save_json("data/karmaenhanced/scores.json", self.scores)
                             return
                         else:
                             await self.bot.send_message(message.channel,
@@ -227,7 +230,7 @@ class Karmaenhanced:
                                 msg = "{} now has {} points.".format(
                                     member.name, self.scores[member.id]["score"])
                                 await self.bot.send_message(message.channel, msg)
-                            fileIO("data/karmaenhanced/scores.json", "save", self.scores)
+                            dataIO.save_json("data/karmaenhanced/scores.json", self.scores)
                             return
                         else:
                             await self.bot.send_message(message.channel,
@@ -246,14 +249,14 @@ class Karmaenhanced:
         global role
         self.settings = fileIO("data/karmaenhanced/settings.json", 'load')
         currenttime = datetime.datetime.now()
-        if '@everyone' in [r.name for r in user.roles]:
-            if self.settings['roles']['@everyone']['allowed'] is False:
-                for role in self.settings['roles']:
-                    if role in [r.name for r in user.roles] and role != '@everyone':
-                        if self.settings['roles'][role]['allowed'] is False:
-                            timecalc = datetime.datetime.strptime(self.cooldown[user.id]['cooldown'], '%Y-%m-%d %H:%M') - currenttime
-                            await self.bot.send_message(channel, "You can't change karmapoints right now." + str(timecalc))
-                            return False
+        # if '@everyone' in [r.name for r in user.roles]:
+        #     if self.settings['roles']['@everyone']['allowed'] is False:
+        #         for role in self.settings['roles']:
+        #             if role in [r.name for r in user.roles] and role != '@everyone':
+        #                 if self.settings['roles'][role]['allowed'] is False:
+        #                     timecalc = datetime.datetime.strptime(self.cooldown[user.id]['cooldown'], '%Y-%m-%d %H:%M') - currenttime
+        #                     await self.bot.send_message(channel, "You can't change karmapoints right now." + str(timecalc))
+        #                     return False
         try:
             msg = ""
             if await self.check_day():
@@ -264,24 +267,24 @@ class Karmaenhanced:
                 self._process_scores(memb,1)
                 msg += "**{} now has {} points.**\n".format(
                     memb.name, self.scores[memb.id]["score"])
-                fileIO("data/karmaenhanced/scores.json", "save", self.scores)
-            if currenttime < datetime.datetime.strptime(self.cooldown[user.id]['cooldown'], '%Y-%m-%d %H:%M'):
+                dataIO.save_json("data/karmaenhanced/scores.json", self.scores)
+            if currenttime < datetime.datetime.strptime(self.cooldown[user.id]['cooldown'], '%Y-%m-%d %H:%M:%S.%f'):
                 timecalc = datetime.datetime.strptime(self.cooldown[user.id]['cooldown'],
-                                                                    '%Y-%m-%d %H:%M') - currenttime
+                                                                    '%Y-%m-%d %H:%M:%S.%f') - currenttime
                 time = datetime.datetime.strptime(str(timecalc),'%H:%M:%S.%f')
                 msg += "You can't change karmapoints right now. Try again in " + str(datetime.datetime.strftime(time,'%H:%M'))
                 await self.bot.send_message(channel, msg)
                 return False
-            elif currenttime > datetime.datetime.strptime(self.cooldown[user.id]['cooldown'], '%Y-%m-%d %H:%M'):
+            elif currenttime > datetime.datetime.strptime(self.cooldown[user.id]['cooldown'], '%Y-%m-%d %H:%M:%S.%f'):
                 del(self.cooldown[user.id])
-                fileIO('data/karmaenhanced/cooldown.json', 'save', self.cooldown)
+                dataIO.save_json('data/karmaenhanced/cooldown.json', self.cooldown)
                 return True
             else:
                 return True
         except KeyError:
             self.cooldown[user.id] = {}
-            self.cooldown[user.id]['cooldown'] = datetime.datetime.now()
-            fileIO('data/karmaenhanced/cooldown.json', 'save', self.cooldown)
+            self.cooldown[user.id]['cooldown'] = str(datetime.datetime.now())
+            dataIO.save_json('data/karmaenhanced/cooldown.json', self.cooldown)
             return True
 
 
