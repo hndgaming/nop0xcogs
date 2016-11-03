@@ -70,7 +70,7 @@ class Karmaenhanced:
                     cooldown = datetime.datetime.now() + datetime.timedelta(
                         minutes=self.settings['roles'][role]['cooldown'])
                     self.cooldown[user.id] = {}
-                    self.cooldown[user.id]['cooldown'] = cooldown.strftime('%Y-%m-%d %H:%M')
+                    self.cooldown[user.id]['cooldown'] = cooldown.strftime('%Y-%m-%d %H:%M:%S.%f')
                     fileIO('data/karmaenhanced/cooldown.json', 'save', self.cooldown)
                     return True
                 if role == '@everyone':
