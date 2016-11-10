@@ -65,11 +65,11 @@ class modenhanced:
         if(self.settings["spamdelete"]):
             self.settings["spamdelete"] = False
             dataIO.save_json("data/modenhanced/settings.json", self.settings)
-            await self.bot.say("Toggled spamdelete.")
+            await self.bot.say("Toggled spamdelete to "+ str(self.settings["spamdelete"]))
             return
         self.settings["spamdelete"] = True
         dataIO.save_json("data/modenhanced/settings.json", self.settings)
-        await self.bot.say("Toggled spamdelete.")
+        await self.bot.say("Toggled spamdelete to "+ str(self.settings["spamdelete"]))
 
     @modset.command(name="serverid", pass_context=True)
     async def serverid(self, ctx, id: str):
@@ -120,6 +120,24 @@ class modenhanced:
                 return
             self.settings[server.id]["mod-log"] = None
             await self.bot.say("Mod log deactivated.")
+        dataIO.save_json("data/modenhanced/settings.json", self.settings)
+
+    @modset.command(pass_context=True, no_pm=True)
+    async def serverlog(self, ctx, channel: discord.Channel = None):
+        """Sets a channel as mod log
+
+        Leaving the channel parameter empty will deactivate it"""
+        server = ctx.message.server
+        if channel:
+            self.settings[server.id]["server-log"] = channel.id
+            await self.bot.say("Server events will be sent to {}"
+                               "".format(channel.mention))
+        else:
+            if self.settings[server.id]["server-log"] is None:
+                await send_cmd_help(ctx)
+                return
+            self.settings[server.id]["server-log"] = None
+            await self.bot.say("Server log deactivated.")
         dataIO.save_json("data/modenhanced/settings.json", self.settings)
 
     @modset.command(name ="intmodch", pass_context=True, no_pm=True)
@@ -213,7 +231,7 @@ class modenhanced:
 
     @commands.command(no_pm=True, pass_context=True)
     @checks.admin_or_permissions(ban_members=True)
-    async def ban(self, ctx, user: discord.Member, days: int=0):
+    async def ban(self, ctx, user: discord.Member, reason: str, days: int=0):
         """Bans user and deletes last X days worth of messages.
 
         Minimum 0 days, maximum 7. Defaults to 0."""
@@ -225,12 +243,7 @@ class modenhanced:
         try:
             self._tmp_banned_cache.append(user)
             await self.bot.ban(user, days)
-            logger.info("{}({}) banned {}({}), deleting {} days worth of messages".format(
-                author.name, author.id, user.name, user.id, str(days)))
-            await self.new_case(server,
-                                action="Ban \N{HAMMER}",
-                                mod=author,
-                                user=user)
+            await self.appendmodlog("Banned " + user.name + " for " + reason, server)
             await self.bot.say("Done. It was about time.")
         except discord.errors.Forbidden:
             await self.bot.say("I'm not allowed to do that.")
@@ -954,8 +967,8 @@ class modenhanced:
                 self.warnings[member.id]["reasons"][ts] = tempreason
             await self.appendmodlog(ctx.message.author.name + " warned " + member.name + " for " + tempreason, member.server)
             message = ("**This is a warning message from the "+ctx.message.server.name+" server** \n"
-                       "You have received a warning point for breaking the rule: "+str(rulenumber)+" " + self.rules[rulenumber]+"\n"
-                       "\n"+reason+"\n\n"
+                       "You have received a warning point for breaking the rule: "+str(rulenumber)+"\n"
+                       "\n Reason: "+reason+"\n\n"
                        "You now have **"+str(self.warnings[member.id]["points"])+"** warning points in total.\n"
                        "If your account reaches 3 warning points, it will be reviewed by the staff team.\n"
                        "For a complete list of "+ctx.message.server.name+" rules, please see the #intro channel\n")
@@ -967,7 +980,7 @@ class modenhanced:
                 msg += "User " + member.name + " reached "+ str(self.warnings[member.id]["points"]) +" Warning points.\n"
                 times = self.warnings[member.id]["reasons"]
                 for time in times:
-                    msg += "**Date:" + str(time) + "**\n"
+                    msg += "**Date: " + str(time) + "**\n"
                     reasons = self.warnings[member.id]["reasons"][time].split(";")
                     msg += "Reasons: \n"
                     for temporeason in reasons:
@@ -1220,10 +1233,30 @@ class modenhanced:
                     self._tmp_banned_cache.remove(author)
         return False
 
+
+    async def on_message_delete(self, message):
+        if message.channel.is_private or self.bot.user == message.author:
+            return
+        current_ch = message.channel
+        if current_ch.id in self.ignore_list["CHANNELS"]:
+            return
+        await self.appendserverlog(message.author.name + " deleted his message " + message.content, message.server)
+
+    async def on_message_edit(self, before, after):
+        if before.channel.is_private or self.bot.user == before.author:
+            return
+        current_ch = before.channel
+        if current_ch.id in self.ignore_list["CHANNELS"]:
+            return
+        await self.appendserverlog(before.author.name + " edited " + before.content + " to " + after.content, before.server)
+
     async def on_message(self, message):
         if message.channel.is_private or self.bot.user == message.author:
             return
         elif self.is_mod_or_superior(message):
+            return
+        current_ch = message.channel
+        if current_ch.id in self.ignore_list["CHANNELS"]:
             return
         deleted = await self.check_filter(message)
         if not deleted:
@@ -1233,16 +1266,9 @@ class modenhanced:
         if not deleted:
             deleted = await self.check_spammychars(message)
 
-    async def on_member_ban(self, member):
-        if member not in self._tmp_banned_cache:
-            server = member.server
-            await self.new_case(server,
-                                user=member,
-                                action="Ban \N{HAMMER}")
-
     async def mute_check(self):
         CHECK_DELAY = 60
-        while self == self.bot.get_cog("Mod"):
+        while self == self.bot.get_cog("modenhanced"):
             currenttime = datetime.datetime.now()
             self.mutes = dataIO.load_json("data/modenhanced/mutes.json")
             for mute in self.mutes:
@@ -1283,6 +1309,8 @@ class modenhanced:
                                  self.past_nicknames)
 
     async def appendmodlog(self, msg:str,server):
+        if(self.settings[server.id]["mod-log"] == None):
+            return
         channel = self.settings[server.id]["mod-log"]
         channel_obj = self.bot.get_channel(channel)
         can_speak = channel_obj.permissions_for(channel_obj.server.me).send_messages
@@ -1291,7 +1319,20 @@ class modenhanced:
                 self.bot.get_channel(channel),
                 msg)
 
+    async def appendserverlog(self, msg:str,server):
+        if (self.settings[server.id]["server-log"] == None):
+            return
+        channel = self.settings[server.id]["server-log"]
+        channel_obj = self.bot.get_channel(channel)
+        can_speak = channel_obj.permissions_for(channel_obj.server.me).send_messages
+        if channel_obj and can_speak:
+            await self.bot.send_message(
+                self.bot.get_channel(channel),
+                msg)
+
     async def appendinternal(self, msg:str,server):
+        if (self.settings[server.id]["int-mod-log"] == None):
+            return
         channel = self.settings[server.id]["int-mod-log"]
         channel_obj = self.bot.get_channel(channel)
         can_speak = channel_obj.permissions_for(channel_obj.server.me).send_messages
