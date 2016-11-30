@@ -1254,7 +1254,7 @@ class modenhanced:
             return
         ts = datetime.datetime.now().strftime('%H:%M:%S') 
         if len(message.content) > 40: 
-            await self.appendmodlog_ne("`"+ ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(message.author.discriminator) + "** *deleted his/her message* \n ```" + message.content + "```", message.server)
+            await self.appendmodlog_ne("`"+ ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(message.author.discriminator) + "** *deleted his/her message: * ```" + message.content + "```", message.server)
         else:
             await self.appendmodlog_ne("`"+ ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(message.author.discriminator) + "** *deleted his/her message* \n `" + message.content + "`", message.server)
 
