@@ -263,7 +263,7 @@ class modenhanced:
             data.set_author(name="Automatic Filter Action")
             data.add_field(name="Action: Banned " + user.name + " from the server", value="Reason: " + reason)
             self._tmp_banned_cache.append(user)
-            #await self.bot.ban(user, days)
+            await self.bot.ban(user, days)
             await self.appendmodlog(data,server)
         except Exception as e:
             print(e)
