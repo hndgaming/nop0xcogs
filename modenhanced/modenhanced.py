@@ -1013,6 +1013,82 @@ class modenhanced:
             await self.bot.send_message(member, embed=data2)
             dataIO.save_json("data/modenhanced/warnings.json", self.warnings)
         #await self.bot.send_message(ctx.message.author, "das ist ein test")
+        
+    async def auto_warning(self, member: discord.Member, reason):
+        try:
+            points = int(self.warnings[member.id]["points"])
+            points += 1
+            ts = datetime.datetime.now().strftime('%Y-%m-%d')
+            self.warnings[member.id]["points"] = points
+            try:
+                self.warnings[member.id]["reasons"][ts] = self.warnings[member.id]["reasons"][ts] + ";" + "Automute for " + reason
+            except KeyError:
+                self.warnings[member.id]["reasons"][ts] = {}
+                self.warnings[member.id]["reasons"][ts] = "Automute for " + reason
+            data = discord.Embed(description="Warning", color=discord.Colour.blue())
+            data.set_author(name="Automatic Warning")
+            data.add_field(name="Action: Warned " + member.name + "!", value="Reason: " + reason)
+            await self.appendmodlog(data,member.server)
+            
+            data2 = discord.Embed(description="Warning", color=discord.Colour.red())
+            data2.set_author(name="Automatic Warning")
+            data2.add_field(name="**This is a warning message from the " + member.server.name + " server**", 
+                            value="You have received a warning point for triggering the filter."
+                                +"\n"
+                                "Reason: " + reason ,inline=False)
+            data2.add_field(name="You now have **"+str(self.warnings[member.id]["points"])+"** warning points in total.\n", 
+                            value="If your account reaches 3 warning points, it will be reviewed by the staff team.\n",inline=False)
+            data2.set_footer(text="For a complete list of "+member.server.name+" rules, please see the #intro channel")
+            
+            await self.bot.send_message(member, embed=data2)
+            #await self.bot.send_message(member,message)
+            print("pmed")
+            if(self.warnings[member.id]["points"] >= 3):
+                data = discord.Embed(description="Warning Excess", colour=discord.Colour.red())
+                if member.avatar_url:
+                    name = str(member)
+                    name = " ~ ".join((name, member.nick)) if member.nick else name
+                    data.set_author(name=name, url=member.avatar_url)
+                    data.set_thumbnail(url=member.avatar_url)
+                else:
+                    data.set_author(name=member.name)
+                times = self.warnings[member.id]["reasons"]
+                i = 1
+                for time in times:
+                    msg = ""
+                    reasons = self.warnings[member.id]["reasons"][time].split(";")
+                    msg += "Reasons: \n"
+                    for temporeason in reasons:
+                        msg += temporeason
+                        msg += "\n"
+                    data.add_field(name="Date: " + str(time), value=msg, inline=False)
+                await self.appendinternal(data, member.server)
+            dataIO.save_json("data/modenhanced/warnings.json", self.warnings)
+        except KeyError:
+            ts = datetime.datetime.now().strftime('%Y-%m-%d')
+            self.warnings[member.id] = {}
+            self.warnings[member.id]["points"] = 1
+            self.warnings[member.id]["reasons"] = {}
+            self.warnings[member.id]["reasons"][ts] = {}
+            self.warnings[member.id]["reasons"][ts] = "Automute for " + reason
+            data = discord.Embed(description="Warning", color=discord.Colour.red())
+            data.set_author(name="Automatic Warning")
+            data.add_field(name="Action: Warned " + member.name + "!", value="Reason: " + reason)
+            await self.appendmodlog(data,member.server)
+
+            data2 = discord.Embed(description="Warning", color=discord.Colour.red())
+            data2.set_author(name="Automatic Warning")
+            data2.add_field(name="**This is a warning message from the " + member.server.name + " server**", 
+                            value="You have received a warning point for triggering the filter."
+                                +"\n"
+                                "Reason: " + reason ,inline=False)
+            data2.add_field(name="You now have **"+str(self.warnings[member.id]["points"])+"** warning points in total.\n", 
+                            value="If your account reaches 3 warning points, it will be reviewed by the staff team.\n",inline=False)
+            data2.set_footer(text="For a complete list of "+member.server.name+" rules, please see the #intro channel")
+            
+            await self.bot.send_message(member, embed=data2)
+            dataIO.save_json("data/modenhanced/warnings.json", self.warnings)
+        #await self.bot.send_message(ctx.message.author, "das ist ein test")
 
     @commands.command(name="warnlist", pass_context=True)
     async def warninglist(self, ctx, limit: int = 10):
@@ -1077,23 +1153,24 @@ class modenhanced:
                 if re.search(regex,message.content.lower()):
                     # Something else in discord.py is throwing a 404 error
                     # after deletion
-                    try:
-                        await self.bot.delete_message(message)
-                        if (self.filter[server.id][w]["action"] == "mute"):
-                            await self.auto_mute(message.author,
-                                                 self.filter[server.id][w]["duration"],
-                                                 self.filter[server.id][w]["unit"],
-                                                 "For using the blacklisted word "+ w +"!")
-                            return True
-                        if self.filter[server.id][w]["action"] == "ban":
-                            await self.auto_ban(message.author, 0, "For using the blacklisted word " + w + "!")
-                            return True
+                    #try:
+                    await self.bot.delete_message(message)
+                    if (self.filter[server.id][w]["action"] == "mute"):
+                        await self.auto_warning(message.author,"Using the blacklisted word "+ w +"!")
+                        await self.auto_mute(message.author,
+                                             self.filter[server.id][w]["duration"],
+                                             self.filter[server.id][w]["unit"],
+                                             "For using the blacklisted word "+ w +"!")
+                        return True
+                    if self.filter[server.id][w]["action"] == "ban":
+                        await self.auto_ban(message.author, 0, "For using the blacklisted word " + w + "!")
+                        return True
 
-                        if self.filter[server.id][w]["action"] == "kick":
-                            await self.auto_kick(message.author, "using the blacklisted word " + w + "!")
-                            return True
-                    except:
-                        pass
+                    if self.filter[server.id][w]["action"] == "kick":
+                        await self.auto_kick(message.author, "using the blacklisted word " + w + "!")
+                        return True
+                    #except:
+                        #pass
                     try:
                         data = discord.Embed(colour = discord.Colour.green())
                         data.set_author(name="Automatic Action")
