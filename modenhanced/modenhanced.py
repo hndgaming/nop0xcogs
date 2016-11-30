@@ -263,7 +263,7 @@ class modenhanced:
             data.set_author(name="Automatic Filter Action")
             data.add_field(name="Action: Banned " + user.name + " from the server", value="Reason: " + reason)
             self._tmp_banned_cache.append(user)
-            await self.bot.ban(user, days)
+            #await self.bot.ban(user, days)
             await self.appendmodlog(data,server)
         except Exception as e:
             print(e)
@@ -1253,7 +1253,10 @@ class modenhanced:
         if current_ch.id in self.ignore_list["CHANNELS"]:
             return
         ts = datetime.datetime.now().strftime('%H:%M:%S') 
-        await self.appendmodlog_ne("`"+ ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(message.author.discriminator) + "** *deleted his/her message* \n ```" + message.content + "```", message.server)
+        if len(message.content) > 40: 
+            await self.appendmodlog_ne("`"+ ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(message.author.discriminator) + "** *deleted his/her message* \n ```" + message.content + "```", message.server)
+        else:
+            await self.appendmodlog_ne("`"+ ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(message.author.discriminator) + "** *deleted his/her message* \n `" + message.content + "`", message.server)
 
     async def on_message_edit(self, before, after):
         if before.channel.is_private or self.bot.user == before.author:
