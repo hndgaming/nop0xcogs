@@ -802,22 +802,16 @@ class modenhanced:
                         if self.filter[server.id][w]["action"] == "mute":
                             mute_filter += w + " (Duration: " + str(self.filter[server.id][w]["duration"]) + " " + self.filter[server.id][w]["unit"] + ") "
                             continue
-                        elif self.filter[server.id][w]["action"] == "ban":
-                            ban_filter += w + ", "
-                            continue
                         else:
                             none_filter += w + ", "
                     data2.add_field(name="Filter Action: Mute",
                                     value=mute_filter, inline=False)
-                    data2.add_field(name="Filter Action: Ban",
-                                    value=ban_filter, inline=False)
                     data2.add_field(name="Filter Action: Delete",
                                     value=none_filter, inline=False)
                     try:
                         await self.bot.send_message(author, embed=data2)
                     except:
                         msg = "Muted Words : " + mute_filter
-                        msg += "Ban Words: " + ban_filter
                         msg += "Delete Words: " + none_filter
                         await self.bot.send_message(author, msg)
 
