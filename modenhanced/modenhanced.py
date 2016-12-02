@@ -632,7 +632,7 @@ class modenhanced:
         data = discord.Embed(colour=discord.Colour.red())
         data.set_author(name="Moderation Log")
         data.set_image(url="http://gameranx.com/wp-content/uploads/2016/05/Overwatch6.jpg")
-        data.add_field(name="Action: Banned D.Va from the Server. There is only room for one Modbot, bitch.")
+        data.add_field(name="Action: Banned D.Va from the Server.", value="There is only room for one Modbot, bitch.")
         await self.bot.say(channel, embed=data)
 
     @commands.command(name="mute", pass_context=True)
