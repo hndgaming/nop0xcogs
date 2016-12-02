@@ -1410,11 +1410,11 @@ class modenhanced:
             return
         deleted = await self.check_filter(message)
         if not deleted:
+            deleted = await self.check_spammychars(message)
+        if not deleted:
             deleted = await self.check_duplicates(message)
         if not deleted:
             deleted = await self.check_mention_spam(message)
-        if not deleted:
-            deleted = await self.check_spammychars(message)
 
     async def mute_check(self):
         CHECK_DELAY = 60
