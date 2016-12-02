@@ -206,7 +206,7 @@ class modenhanced:
         try:
             await self.bot.kick(user)
             data = discord.Embed(colour = discord.Colour.red())
-            data.set_author(name="Staff Member: " + author.name)
+            data.set_author(name="Moderation Log")
             data.add_field(name="Action: Kicked " + user.name + " from the server", value="Reason: " + reason)
             await self.bot.say("Done. That felt good.")
         except discord.errors.Forbidden:
@@ -236,7 +236,7 @@ class modenhanced:
             return
         try:
             data = discord.Embed(colour = discord.Colour.red())
-            data.set_author(name="Staff Member: " + author.name)
+            data.set_author(name="Moderation Log")
             data.set_image(url="http://gameranx.com/wp-content/uploads/2016/05/Overwatch6.jpg")
             data.add_field(name="Action: Banned " + user.name + " from the server", value="Reason: " + reason)
             self._tmp_banned_cache.append(user)
@@ -634,7 +634,7 @@ class modenhanced:
                 await self.bot.add_roles(member, role)
             await self.bot.say("Muter User " + member.name + " for " + str(duration) + " " + unit + "!")
             data = discord.Embed(colour = discord.Colour.orange())
-            data.set_author(name="Staff Member: " + ctx.message.author.name)
+            data.set_author(name="Moderation Log")
             data.add_field(name="Action: Muted " + member.name + " for " + str(duration) + " " + unit + "!", value="Reason: " + reason)
             await self.appendmodlog(data,member.server)
             
@@ -660,7 +660,7 @@ class modenhanced:
                 await self.bot.add_roles(member, role)
             await self.bot.say("Muter User " + member.name + " for " + str(duration) + " " + unit + "!")
             data = discord.Embed(colour = discord.Colour.orange())
-            data.set_author(name="Staff Member: " + ctx.message.author.name)
+            data.set_author(name="Moderation Log")
             data.add_field(name="Action: Muted " + member.name + " for " + str(duration) + " " + unit + "!", value="Reason: " + reason)
             await self.appendmodlog(data,member.server)
 
@@ -841,7 +841,7 @@ class modenhanced:
             else:
                 roles = "None"
             data = discord.Embed(colour = discord.Colour.blue())
-            data.set_author(name="Staff Member: " + ctx.message.author.name)
+            data.set_author(name="Moderation Log")
             data.add_field(name="Action: Added Role " + srole.name + " to user " + user.name + "!", value="Reason: " + reason)
             data.add_field(name="Roles", value=roles, inline=False)
             await self.appendmodlog(data,ctx.message.author.server)
@@ -867,7 +867,7 @@ class modenhanced:
             else:
                 roles = "None"
             data = discord.Embed(colour = discord.Colour.blue())
-            data.set_author(name="Staff Member: " + ctx.message.author.name)
+            data.set_author(name="Moderation Log")
             data.add_field(name="Action: Added Role " + srole.name + " to user " + user.name + "!", value="Reason: " + reason)
             data.add_field(name="Roles", value=roles, inline=False)
             await self.appendmodlog(data,ctx.message.author.server)
@@ -965,12 +965,12 @@ class modenhanced:
                 self.warnings[member.id]["reasons"][ts] = {}
                 self.warnings[member.id]["reasons"][ts] = tempreason
             data = discord.Embed(description="Warning", color=discord.Colour.blue())
-            data.set_author(name="Staff Member: " + ctx.message.author.name)
+            data.set_author(name="Moderation Log")
             data.add_field(name="Action: Warned " + member.name + "!", value="Reason: " + reason)
             await self.appendmodlog(data,member.server)
             
             data2 = discord.Embed(description="Warning", color=discord.Colour.red())
-            data2.set_author(name="Staff Member: " + ctx.message.author.name)
+            data2.set_author(name="Moderation Message")
             data2.add_field(name="**This is a warning message from the " + ctx.message.server.name + " server**", 
                             value="You have received a warning point for breaking the rule: #" + str(rulenumber)
                                 + " - " + self.rules[rulenumber] + "\n"
@@ -1013,14 +1013,14 @@ class modenhanced:
             tempreason = "Rule Number " + rulenumber + "- " + reason
             self.warnings[member.id]["reasons"][ts] = reason
             data = discord.Embed(description="Warning", color=discord.Colour.red())
-            data.set_author(name="Staff Member: " + ctx.message.author.name)
+            data.set_author(name="Moderation Log")
             data.add_field(name="Action: Warned " + member.name + "!", value="Reason: " + reason)
             await self.appendmodlog(data,member.server)
             await self.bot.say("User has been warned.")
         
         
             data2 = discord.Embed(description="Warning", color=discord.Colour.red())
-            data2.set_author(name="Staff Member: " + ctx.message.author.name)
+            data2.set_author(name="Moderation Message")
             data2.add_field(name="**This is a warning message from the " + ctx.message.server.name + " server**", 
                             value="You have received a warning point for breaking the rule: #" + str(rulenumber)
                                 + " - " + self.rules[rulenumber] + "\n"
