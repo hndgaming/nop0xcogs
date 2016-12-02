@@ -49,7 +49,6 @@ class modenhanced:
             msg = ("Admin role: {ADMIN_ROLE}\n"
                    "Mod role: {MOD_ROLE}\n"
                    "Mod-log: {mod-log}\n"
-                   "Delete repeats: {delete_repeats}\n"
                    "Ban mention spam: {ban_mention_spam}\n"
                    "".format(**_settings))
             await self.bot.say(box(msg))
