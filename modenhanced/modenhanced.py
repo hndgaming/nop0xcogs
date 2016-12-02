@@ -813,7 +813,13 @@ class modenhanced:
                                     value=ban_filter, inline=False)
                     data2.add_field(name="Filter Action: Delete",
                                     value=none_filter, inline=False)
-                    await self.bot.send_message(author, embed=data2)
+                    try:
+                        await self.bot.send_message(author, embed=data2)
+                    except:
+                        msg = "Muted Words : " + mute_filter
+                        msg += "Ban Words: " + ban_filter
+                        msg += "Delete Words: " + none_filter
+                        await self.bot.send_message(author, msg)
 
     @_filter.command(name="add", pass_context=True)
     @checks.mod_or_permissions(manage_messages=True)
