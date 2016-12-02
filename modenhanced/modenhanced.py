@@ -1238,11 +1238,12 @@ class modenhanced:
             match = re.split(r"(.)\1{9,}", message.content)
             if len(match) > 1 or len(match2) > 1:
                 await self.bot.delete_message(message)
-                data = discord.Embed(description="Spammychar")
+                data = discord.Embed(colour=discord.Colour.green())
                 if message.author.avatar_url:
                     data.set_thumbnail(url=message.author.avatar_url)
-                data.set_author(name=message.author.name)
-                data.add_field(name="Deleted Message for spammylooking characters", value=message.content)
+                data.set_author(name="Automatic Action")
+                data.add_field(name="Action: Deleted Message \"" + message.content + "\" of user " + message.author.name + "!",
+                    value="Reason: Contains spam")
                 await self.appendmodlog(data, message.server)
                 return True
 
