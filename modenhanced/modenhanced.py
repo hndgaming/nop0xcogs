@@ -1033,6 +1033,13 @@ class modenhanced:
             dataIO.save_json("data/modenhanced/warnings.json", self.warnings)
         #await self.bot.send_message(ctx.message.author, "das ist ein test")
         
+    @commands.command(name="flushwarn", pass_context=True)
+    async def flush_warning(self,ctx, member: discord.Member):
+        try:
+            del(self.warnings[member.id])
+            await self.bot.say("<insert funny toilet joke here> - done.")
+        except:
+            await self.bot.say("An error occured!")
     async def auto_warning(self, member: discord.Member, reason):
         try:
             points = int(self.warnings[member.id]["points"])
