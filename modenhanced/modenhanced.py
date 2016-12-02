@@ -721,7 +721,7 @@ class modenhanced:
         return msg
 
     @commands.group(name="filter", pass_context=True, no_pm=True)
-    @checks.mod_or_permissions(manage_messages=True)
+    @checks.mod_or_permissions(ban_members=True)
     async def _filter(self, ctx):
         """Adds/removes words from filter
         Use double quotes to add/remove sentences
@@ -758,6 +758,7 @@ class modenhanced:
                     await self.bot.send_message(author, embed=data2)
 
     @_filter.command(name="add", pass_context=True)
+    @checks.mod_or_permissions(manage_messages=True)
     async def filter_add(self, ctx, action:str, word:str, duration=0,unit="",):
         """Adds words to the filter
         Use double quotes to add sentences
