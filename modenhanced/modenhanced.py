@@ -1300,8 +1300,8 @@ class modenhanced:
                                           "_": r"\_`"}))
         ts = datetime.datetime.now().strftime('%H:%M:%S') 
         await self.appendmodlog_ne("`" + ts + "` " + before.channel.mention + " :pencil2: **" + before.author.name + "#" + str(before.author.discriminator) + "** *edited his/her message:* "+ 
-                                   "\n**Original:** \n " + escaped + " \n" + 
-                                    "**Update:** \n " + escaped2 , before.server)
+                                   "\n**Original:** \n " + before.clean_content + " \n" + 
+                                    "**Update:** \n " + after.clean_content , before.server)
                                     
     def insertChar(mystring, position, chartoinsert ):
         longi = len(mystring)
