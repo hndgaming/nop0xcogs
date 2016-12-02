@@ -49,6 +49,7 @@ class modenhanced:
             msg = ("Admin role: {ADMIN_ROLE}\n"
                    "Mod role: {MOD_ROLE}\n"
                    "Mod-log: {mod-log}\n"
+                   "Delete repeats: {delete_repeats}\n"
                    "Ban mention spam: {ban_mention_spam}\n"
                    "".format(**_settings))
             await self.bot.say(box(msg))
@@ -1317,12 +1318,12 @@ class modenhanced:
 
     async def on_member_join(self, member):
         ts = datetime.datetime.now().strftime('%H:%M:%S')
-        await self.appendmodlog_ne("`" + ts + "` :white_check_mark: __**" + member.name + "#" + str(
+        await self.appendserverlog("`" + ts + "` :white_check_mark: __**" + member.name + "#" + str(
             member.discriminator) + "**__ *(" + member.id + ")* **joined the server**", member.server)
 
     async def on_member_remove(self, member):
         ts = datetime.datetime.now().strftime('%H:%M:%S')
-        await self.appendmodlog_ne("`" + ts + "` :no_entry: __**" + member.name + "#" + str(
+        await self.appendserverlog("`" + ts + "` :no_entry: __**" + member.name + "#" + str(
             member.discriminator) + "**__ *(" + member.id + ")* **left the server**", member.server)
 
         # async def rate_limit(self, message):
@@ -1353,12 +1354,12 @@ class modenhanced:
             return
         ts = datetime.datetime.now().strftime('%H:%M:%S')
         if len(message.content) > 40:
-            await self.appendmodlog_ne(
+            await self.appendserverlog(
                 "`" + ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(
                     message.author.discriminator) + "** *deleted his/her message* \n " + message.content + "",
                 message.server)
         else:
-            await self.appendmodlog_ne(
+            await self.appendserverlog(
                 "`" + ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(
                     message.author.discriminator) + "** *deleted his/her message* \n " + message.content + "",
                 message.server)
@@ -1369,38 +1370,22 @@ class modenhanced:
         current_ch = before.channel
         if current_ch.id in self.ignore_list["CHANNELS"]:
             return
-        escaped = before.content.translate(str.maketrans({"`": r"\`",
-                                                          "*": r"\*`]",
-                                                          "_": r"\_`"}))
-        escaped2 = after.content.translate(str.maketrans({"`": r"\`",
-                                                          "*": r"\*`]",
-                                                          "_": r"\_`"}))
         ts = datetime.datetime.now().strftime('%H:%M:%S')
-        await self.appendmodlog_ne(
-            "`" + ts + "` " + before.channel.mention + " :pencil2: **" + before.author.name + "#" + str(
-                before.author.discriminator) + "** *edited his/her message:* " +
-            "\n**Original:** \n " + escaped + " \n" +
-            "**Update:** \n " + escaped2, before.server)
-        await self.appendmodlog_ne(
+        await self.appendserverlog(
             "`" + ts + "` " + before.channel.mention + " :pencil2: **" + before.author.name + "#" + str(
                 before.author.discriminator) + "** *edited his/her message:* " +
             "\n**Original:** \n " + before.clean_content + " \n" +
             "**Update:** \n " + after.clean_content, before.server)
 
-    def insertChar(mystring, position, chartoinsert):
-        longi = len(mystring)
-        mystring = mystring[:position] + chartoinsert + mystring[position:]
-        return mystring
-
     async def on_member_update(self, before, after):
         ts = datetime.datetime.now().strftime('%H:%M:%S')
         if before.nick != after.nick:
             if after.nick is None:
-                await self.appendmodlog_ne("`" + ts + "` :pencil: **" + before.name + "#" + str(
+                await self.appendserverlog("`" + ts + "` :pencil: **" + before.name + "#" + str(
                     before.discriminator) + "** *changed his/her name to* " +
                                            "`" + after.name + "`", before.server)
             else:
-                await self.appendmodlog_ne("`" + ts + "` :pencil: **" + before.name + "#" + str(
+                await self.appendserverlog("`" + ts + "` :pencil: **" + before.name + "#" + str(
                     before.discriminator) + "** *changed his/her name to* " +
                                            "`" + after.nick + "`", before.server)
         if before.roles != after.roles:
@@ -1419,7 +1404,7 @@ class modenhanced:
                 rolesa = ", ".join(rolesa)
             else:
                 rolesa = "None"
-            await self.appendmodlog_ne("`" + ts + "` :label: **" + before.name + "#" + str(
+            await self.appendserverlog("`" + ts + "` :label: **" + before.name + "#" + str(
                 before.discriminator) + "** *roles have changed* \n" +
                                        "**Original: **" + rolesb + "\n" +
                                        "**Update: **" + rolesa, before.server)
@@ -1507,7 +1492,7 @@ class modenhanced:
                 self.bot.get_channel(channel),
                 msg)
 
-    async def appendserverlog(self, data: discord.Embed, server):
+    async def appendserverlog(self, msg:str, server):
         if (self.settings[server.id]["server-log"] == None):
             return
         channel = self.settings[server.id]["server-log"]
@@ -1516,7 +1501,7 @@ class modenhanced:
         if channel_obj and can_speak:
             await self.bot.send_message(
                 self.bot.get_channel(channel),
-                embed=data)
+                msg)
 
     async def appendinternal(self, data: discord.Embed, server):
         if (self.settings[server.id]["int-mod-log"] == None):
