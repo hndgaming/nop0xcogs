@@ -119,7 +119,7 @@ class modenhanced:
             self.settings[server.id]["slowmode"] = {}
             self.settings[server.id]["slowmode"]["enabled"] = True
         dataIO.save_json("data/modenhanced/settings.json", self.settings)
-        await self.bot.say("Slowmode toggled to "+ self.settings[server.id]["slowmode"]["enabled"])
+        await self.bot.say("Slowmode toggled to "+ str(self.settings[server.id]["slowmode"]["enabled"]))
 
     @modset.command(pass_context=True, no_pm=True)
     async def modlog(self, ctx, channel : discord.Channel=None):
