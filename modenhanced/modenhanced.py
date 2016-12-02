@@ -263,7 +263,7 @@ class modenhanced:
             data.set_author(name="Automatic Filter Action")
             data.add_field(name="Action: Banned " + user.name + " from the server", value="Reason: " + reason)
             self._tmp_banned_cache.append(user)
-            await self.bot.ban(user, days)
+            #await self.bot.ban(user, days)
             await self.appendmodlog(data,server)
         except Exception as e:
             print(e)
@@ -732,12 +732,30 @@ class modenhanced:
             server = ctx.message.server
             author = ctx.message.author
             msg = ""
+            mute_filter = ""
+            ban_filter = ""
+            none_filter = ""
             if server.id in self.filter.keys():
                 if self.filter[server.id] != []:
                     word_list = self.filter[server.id]
+                    data2 = discord.Embed(color=discord.Colour.blue())
+                    data2.set_author(name="Filter List")
                     for w in word_list:
-                        msg += '"' + w + '" '
-                    await self.bot.send_message(author, "Words filtered in this server: " + msg)
+                        if self.filter[server.id][w]["action"] == "mute":
+                            mute_filter += w + " (Duration: "+ str(self.filter[server.id][w]["duration"]) + " " + self.filter[server.id][w]["unit"]+") "
+                            continue
+                        elif self.filter[server.id][w]["action"] == "ban":
+                            ban_filter += w + ", "
+                            continue
+                        else:
+                            none_filter += w + ", "
+                    data2.add_field(name="Filter Action: Mute", 
+                            value=mute_filter,inline=False)
+                    data2.add_field(name="Filter Action: Ban", 
+                            value=ban_filter,inline=False)
+                    data2.add_field(name="Filter Action: Delete", 
+                            value=none_filter,inline=False)
+                    await self.bot.send_message(author, embed=data2)
 
     @_filter.command(name="add", pass_context=True)
     async def filter_add(self, ctx, action:str, word:str, duration=0,unit="",):
@@ -1254,20 +1272,31 @@ class modenhanced:
             return
         ts = datetime.datetime.now().strftime('%H:%M:%S') 
         if len(message.content) > 40: 
-            await self.appendmodlog_ne("`"+ ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(message.author.discriminator) + "** *deleted his/her message: * ```" + message.content + "```", message.server)
+            await self.appendmodlog_ne("`"+ ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(message.author.discriminator) + "** *deleted his/her message* \n " + message.content + "", message.server)
         else:
-            await self.appendmodlog_ne("`"+ ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(message.author.discriminator) + "** *deleted his/her message* \n `" + message.content + "`", message.server)
-
+            await self.appendmodlog_ne("`"+ ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(message.author.discriminator) + "** *deleted his/her message* \n " + message.content + "", message.server)
+        
     async def on_message_edit(self, before, after):
         if before.channel.is_private or self.bot.user == before.author:
             return
         current_ch = before.channel
         if current_ch.id in self.ignore_list["CHANNELS"]:
             return
+        escaped = before.content.translate(str.maketrans({"`":  r"\`",
+                                          "*":  r"\*`]",
+                                          "_": r"\_`"}))
+        escaped2 = after.content.translate(str.maketrans({"`":  r"\`",
+                                          "*":  r"\*`]",
+                                          "_": r"\_`"}))
         ts = datetime.datetime.now().strftime('%H:%M:%S') 
         await self.appendmodlog_ne("`" + ts + "` " + before.channel.mention + " :pencil2: **" + before.author.name + "#" + str(before.author.discriminator) + "** *edited his/her message:* "+ 
-                                   "\n**Original:** \n ```" + before.content + "``` \n" + 
-                                    "**Update:** \n ```" + after.content+"```", before.server)
+                                   "\n**Original:** \n " + escaped + " \n" + 
+                                    "**Update:** \n " + escaped2 , before.server)
+                                    
+    def insertChar(mystring, position, chartoinsert ):
+        longi = len(mystring)
+        mystring   =  mystring[:position] + chartoinsert + mystring[position:] 
+        return mystring   
                                     
     async def on_member_update(self, before, after):
         ts = datetime.datetime.now().strftime('%H:%M:%S') 
