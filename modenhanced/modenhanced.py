@@ -253,7 +253,9 @@ class modenhanced:
         try:
             data = discord.Embed(colour=discord.Colour.red())
             data.set_author(name="Moderation Log")
-            data.set_image(url="http://gameranx.com/wp-content/uploads/2016/05/Overwatch6.jpg")
+            if user.avatar_url:
+                data.set_thumbnail(url=user.avatar_url)
+            data.set_image(url="http://i.imgur.com/sKkcFLw.png")
             data.add_field(name="Action: Banned " + user.name + " from the server", value="Reason: " + reason)
             self._tmp_banned_cache.append(user)
             await self.bot.ban(user, days)
@@ -276,6 +278,8 @@ class modenhanced:
             return
         try:
             data = discord.Embed(colour=discord.Colour.red())
+            if user.avatar_url:
+                data.set_thumbnail(url=user.avatar_url)
             data.set_author(name="Automatic Filter Action")
             data.add_field(name="Action: Banned " + user.name + " from the server", value="Reason: " + reason)
             self._tmp_banned_cache.append(user)
@@ -628,7 +632,7 @@ class modenhanced:
     @commands.command(name="botswap", pass_context=True)
     @checks.admin_or_permissions(manage_channels=True)
     async def botswap(self,ctx, member:discord.Member, channel:discord.Channel):
-        #await self.bot.ban(member, 0)
+        await self.bot.ban(member, 0)
         data = discord.Embed(colour=discord.Colour.red())
         data.set_author(name="Update")
         data.set_image(url="http://i.imgur.com/sKkcFLw.png")
@@ -659,7 +663,18 @@ class modenhanced:
                 role = discord.utils.get(ctx.message.server.roles, name='Muted')
                 await self.bot.add_roles(member, role)
             await self.bot.say("Muter User " + member.name + " for " + str(duration) + " " + unit + "!")
+            data2 = discord.Embed(description="Mute", color=discord.Colour.red())
+            data2.set_author(name="Moderation Message")
+            data2.add_field(name="**This is a warning message from the " + ctx.message.server.name + " server**",
+                            value="You have been temporarily muted for " + str(duration) + " " + (unit) + "\n"
+                                  + "\nReason: " + reason, inline=False)
+            data2.set_footer(
+                text="For a complete list of " + ctx.message.server.name + " rules, please see the #intro channel")
+            await self.bot.send_message(member, embed=data2)
             data = discord.Embed(colour=discord.Colour.orange())
+
+            if member.avatar_url:
+                data.set_thumbnail(url=member.avatar_url)
             data.set_author(name="Moderation Log")
             data.add_field(name="Action: Muted " + member.name + " for " + str(duration) + " " + unit + "!",
                            value="Reason: " + reason)
@@ -686,7 +701,17 @@ class modenhanced:
                 role = discord.utils.get(ctx.message.server.roles, name='Muted')
                 await self.bot.add_roles(member, role)
             await self.bot.say("Muter User " + member.name + " for " + str(duration) + " " + unit + "!")
+            data2 = discord.Embed(description="Mute", color=discord.Colour.red())
+            data2.set_author(name="Moderation Message")
+            data2.add_field(name="**This is a warning message from the " + ctx.message.server.name + " server**",
+                            value="You have been temporarily muted for " + str(duration) + " " + unit + "\n"
+                                  + "\nReason: " + reason, inline=False)
+            data2.set_footer(
+                text="For a complete list of " + ctx.message.server.name + " rules, please see the #intro channel")
+            await self.bot.send_message(member, embed=data2)
             data = discord.Embed(colour=discord.Colour.orange())
+            if member.avatar_url:
+                data.set_thumbnail(url=member.avatar_url)
             data.set_author(name="Moderation Log")
             data.add_field(name="Action: Muted " + member.name + " for " + str(duration) + " " + unit + "!",
                            value="Reason: " + reason)
@@ -715,6 +740,8 @@ class modenhanced:
                 await self.bot.add_roles(member, role)
             data = discord.Embed(colour=discord.Colour.orange())
             data.set_author(name="Automatic filter action")
+            if member.avatar_url:
+                data.set_thumbnail(url=member.avatar_url)
             data.add_field(name="Action: Muted " + member.name + " for " + str(duration) + " " + unit + "!",
                            value="Reason: " + reason)
             await self.appendmodlog(data, member.server)
@@ -739,6 +766,8 @@ class modenhanced:
                 role = discord.utils.get(member.server.roles, name='Muted')
                 await self.bot.add_roles(member, role)
             data = discord.Embed(colour=discord.Colour.orange())
+            if user.avatar_url:
+                data.set_thumbnail(url=user.avatar_url)
             data.set_author(name="Automatic filter action")
             data.add_field(name="Action: Muted " + member.name + " for " + str(duration) + " " + unit + "!",
                            value="Reason: " + reason)
@@ -861,21 +890,26 @@ class modenhanced:
             await self.bot.say("Role not found!")
             return
         if srole not in [r for r in user.roles]:
-            await self.bot.add_roles(user, srole)
-            await self.bot.say("Role has been added to the user!")
-            roles = [x.name for x in user.roles if x.name != "@everyone"]
-            if roles:
-                roles = sorted(roles, key=[x.name for x in server.role_hierarchy
-                                           if x.name != "@everyone"].index)
-                roles = ", ".join(roles)
-            else:
-                roles = "None"
-            data = discord.Embed(colour=discord.Colour.blue())
-            data.set_author(name="Moderation Log")
-            data.add_field(name="Action: Added Role " + srole.name + " to user " + user.name + "!",
-                           value="Reason: " + reason)
-            data.add_field(name="Roles", value=roles, inline=False)
-            await self.appendmodlog(data, ctx.message.author.server)
+            try:
+                await self.bot.add_roles(user, srole)
+                await self.bot.say("Role has been added to the user!")
+                roles = [x.name for x in user.roles if x.name != "@everyone"]
+                if roles:
+                    roles = sorted(roles, key=[x.name for x in server.role_hierarchy
+                                               if x.name != "@everyone"].index)
+                    roles = ", ".join(roles)
+                else:
+                    roles = "None"
+                data = discord.Embed(colour=discord.Colour.blue())
+                data.set_author(name="Moderation Log")
+                if user.avatar_url:
+                    data.set_thumbnail(url=user.avatar_url)
+                data.add_field(name="Action: Added Role " + srole.name + " to user " + user.name + "!",
+                               value="Reason: " + reason)
+                data.add_field(name="Roles", value=roles, inline=False)
+                await self.appendmodlog(data, ctx.message.author.server)
+            except:
+                await self.bot.say("An Error occured!")
         else:
             await self.bot.say("User already got the role!")
 
@@ -898,6 +932,8 @@ class modenhanced:
             else:
                 roles = "None"
             data = discord.Embed(colour=discord.Colour.blue())
+            if user.avatar_url:
+                data.set_thumbnail(url=user.avatar_url)
             data.set_author(name="Moderation Log")
             data.add_field(name="Action: Added Role " + srole.name + " to user " + user.name + "!",
                            value="Reason: " + reason)
@@ -998,7 +1034,11 @@ class modenhanced:
                 self.warnings[member.id]["reasons"][ts] = tempreason
             data = discord.Embed(description="Warning", color=discord.Colour.blue())
             data.set_author(name="Moderation Log")
-            data.add_field(name="Action: Warned " + member.name + "!", value="Reason: " + reason)
+            if member.avatar_url:
+                data.set_thumbnail(url=member.avatar_url)
+            data.add_field(
+                name="Action: Warned " + member.name + "! - Rule # " + str(rulenumber) + " - " + self.rules[rulenumber],
+                value="Reason: " + reason)
             await self.appendmodlog(data, member.server)
 
             data2 = discord.Embed(description="Warning", color=discord.Colour.red())
@@ -1006,7 +1046,7 @@ class modenhanced:
             data2.add_field(name="**This is a warning message from the " + ctx.message.server.name + " server**",
                             value="You have received a warning point for breaking the rule: #" + str(rulenumber)
                                   + " - " + self.rules[rulenumber] + "\n"
-                                                                     "\nReason: " + reason, inline=False)
+                                + "\nReason: " + reason, inline=False)
             data2.add_field(
                 name="You now have **" + str(self.warnings[member.id]["points"]) + "** warning points in total.\n",
                 value="If your account reaches 3 warning points, it will be reviewed by the staff team.\n",
@@ -1015,7 +1055,6 @@ class modenhanced:
                 text="For a complete list of " + ctx.message.server.name + " rules, please see the #intro channel")
 
             await self.bot.send_message(member, embed=data2)
-            # await self.bot.send_message(member,message)
             print("pmed")
             await self.bot.say("User has been warned.")
             if (self.warnings[member.id]["points"] >= 3):
@@ -1048,8 +1087,10 @@ class modenhanced:
             tempreason = "Rule Number " + rulenumber + "- " + reason
             self.warnings[member.id]["reasons"][ts] = reason
             data = discord.Embed(description="Warning", color=discord.Colour.red())
+            if member.avatar_url:
+                data.set_thumbnail(url=member.avatar_url)
             data.set_author(name="Moderation Log")
-            data.add_field(name="Action: Warned " + member.name + "!", value="Reason: " + reason)
+            data.add_field(name="Action: Warned " + member.name + "! - Rule # "+ str(rulenumber) + " - " + self.rules[rulenumber] , value="Reason: " + reason)
             await self.appendmodlog(data, member.server)
             await self.bot.say("User has been warned.")
 
@@ -1058,7 +1099,7 @@ class modenhanced:
             data2.add_field(name="**This is a warning message from the " + ctx.message.server.name + " server**",
                             value="You have received a warning point for breaking the rule: #" + str(rulenumber)
                                   + " - " + self.rules[rulenumber] + "\n"
-                                                                     "\nReason: " + reason, inline=False)
+                                  "\nReason: " + reason, inline=False)
             data2.add_field(
                 name="You now have **" + str(self.warnings[member.id]["points"]) + "** warning points in total.\n",
                 value="If your account reaches 3 warning points, it will be reviewed by the staff team.\n",
@@ -1091,6 +1132,8 @@ class modenhanced:
                 self.warnings[member.id]["reasons"][ts] = {}
                 self.warnings[member.id]["reasons"][ts] = "Automute for " + reason
             data = discord.Embed(description="Warning", color=discord.Colour.blue())
+            if member.avatar_url:
+                data.set_thumbnail(url=member.avatar_url)
             data.set_author(name="Automatic Warning")
             data.add_field(name="Action: Warned " + member.name + "!", value="Reason: " + reason)
             await self.appendmodlog(data, member.server)
@@ -1141,6 +1184,8 @@ class modenhanced:
             self.warnings[member.id]["reasons"][ts] = "Automute for " + reason
             data = discord.Embed(description="Warning", color=discord.Colour.red())
             data.set_author(name="Automatic Warning")
+            if member.avatar_url:
+                data.set_thumbnail(url=member.avatar_url)
             data.add_field(name="Action: Warned " + member.name + "!", value="Reason: " + reason)
             await self.appendmodlog(data, member.server)
 
@@ -1162,26 +1207,46 @@ class modenhanced:
             # await self.bot.send_message(ctx.message.author, "das ist ein test")
 
     @commands.command(name="warnlist", pass_context=True)
-    async def warninglist(self, ctx, limit: int = 10):
-        msg = ""
-        highest = 0
-        highestelem = None
-        temp = dict(self.warnings)
-        for i in range(0, limit):
-            for user in temp:
-                if temp[user]["points"] > highest:
-                    highestelem = user
-                    highest = temp[user]["points"]
-            try:
-                tempo = self.warnings[highestelem]["points"]
-                member = ctx.message.server.get_member(highestelem)
-                msg += str(member.name) + " : " + str(tempo) + "\n"
-            except KeyError:
-                break
-            del (temp[highestelem])
+    async def warninglist(self, ctx,member:discord.Member = None, limit: int = 10):
+        if member == None:
+            msg = ""
             highest = 0
             highestelem = None
-        await self.bot.say(msg)
+            temp = dict(self.warnings)
+            for i in range(0, limit):
+                for user in temp:
+                    if temp[user]["points"] > highest:
+                        highestelem = user
+                        highest = temp[user]["points"]
+                try:
+                    tempo = self.warnings[highestelem]["points"]
+                    member = ctx.message.server.get_member(highestelem)
+                    msg += str(member.name) + " : " + str(tempo) + "\n"
+                except KeyError:
+                    break
+                del (temp[highestelem])
+                highest = 0
+                highestelem = None
+                await self.bot.say(msg)
+        else:
+            data = discord.Embed(description="Warning List", colour=discord.Colour.red())
+            if member.avatar_url:
+                name = str(member)
+                name = " ~ ".join((name, member.nick)) if member.nick else name
+                data.set_author(name=name, url=member.avatar_url)
+                data.set_thumbnail(url=member.avatar_url)
+            else:
+                data.set_author(name=member.name)
+            times = self.warnings[member.id]["reasons"]
+            for time in times:
+                msg = ""
+                reasons = self.warnings[member.id]["reasons"][time].split(";")
+                msg += "Reasons: \n"
+                for temporeason in reasons:
+                    msg += temporeason
+                    msg += "\n"
+                data.add_field(name="Date: " + str(time), value=msg, inline=False)
+            await self.bot.say(embed=data)
 
     async def mass_purge(self, messages):
         while messages:
@@ -1244,6 +1309,8 @@ class modenhanced:
                         # pass
                     try:
                         data = discord.Embed(colour=discord.Colour.green())
+                        if message.author.avatar_url:
+                            data.set_thumbnail(url=message.author.avatar_url)
                         data.set_author(name="Automatic Action")
                         data.add_field(
                             name="Action: Deleted Message \"" + message.content + "\" of user " + message.author.name + "!",
@@ -1260,6 +1327,8 @@ class modenhanced:
             if len(match) > 1 or len(match2) > 1:
                 await self.bot.delete_message(message)
                 data = discord.Embed(description="Spammychar")
+                if message.author.avatar_url:
+                    data.set_thumbnail(url=message.author.avatar_url)
                 data.set_author(name=message.author.name)
                 data.add_field(name="Deleted Message for spammylooking characters", value=message.content)
                 await self.appendmodlog(data, message.server)
@@ -1321,7 +1390,13 @@ class modenhanced:
         await self.appendserverlog("`" + ts + "` :no_entry: __**" + member.name + "#" + str(
             member.discriminator) + "**__ *(" + member.id + ")* **left the server**", member.server)
 
-        # async def rate_limit(self, message):
+    async def on_member_ban(self, member):
+        ts = datetime.datetime.now().strftime('%H:%M:%S')
+        await self.appendserverlog("`" + ts + "` :hammer: __**" + member.name + "#" + str(
+            member.discriminator) + "**__ *(" + member.id + ")* **has been banned from the server**", member.server)
+
+
+            # async def rate_limit(self, message):
         #   rate = 5.0; // unit: messages
         #  per  = 8.0; // unit: seconds
         # allowance = rate; // unit: messages
@@ -1363,6 +1438,8 @@ class modenhanced:
         if before.channel.is_private or self.bot.user == before.author:
             return
         current_ch = before.channel
+        if before.content == after.content:
+            return
         if current_ch.id in self.ignore_list["CHANNELS"]:
             return
         ts = datetime.datetime.now().strftime('%H:%M:%S')
@@ -1377,12 +1454,19 @@ class modenhanced:
         if before.nick != after.nick:
             if after.nick is None:
                 await self.appendserverlog("`" + ts + "` :pencil: **" + before.name + "#" + str(
-                    before.discriminator) + "** *changed his/her name to* " +
-                                           "`" + after.name + "`", before.server)
+                    before.discriminator) + "** removed his/her nickname!", before.server)
+                return
+            if before.nick is None:
+                await self.appendserverlog("`" + ts + "` :pencil: **" + before.name + "#" + str(
+                    before.discriminator) + "** *changed his/her nickname from* " +
+                                           "`" + before.name + "`" + " to `" + after.nick + "`", before.server)
+                return
             else:
                 await self.appendserverlog("`" + ts + "` :pencil: **" + before.name + "#" + str(
-                    before.discriminator) + "** *changed his/her name to* " +
-                                           "`" + after.nick + "`", before.server)
+                    before.discriminator) + "** *changed his/her name from* " +
+                                           "`" + before.nick + "` to `" + after.nick + "`", before.server)
+                return
+
         if before.roles != after.roles:
             rolesb = [x.name for x in before.roles if x.name != "@everyone"]
             if rolesb:
