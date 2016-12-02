@@ -790,9 +790,9 @@ class modenhanced:
             server = ctx.message.server
             author = ctx.message.author
             msg = ""
-            mute_filter = ""
-            ban_filter = ""
-            none_filter = ""
+            mute_filter = " "
+            ban_filter = " "
+            none_filter = " "
             if server.id in self.filter.keys():
                 if self.filter[server.id] != []:
                     word_list = self.filter[server.id]
@@ -800,7 +800,7 @@ class modenhanced:
                     data2.set_author(name="Filter List")
                     for w in word_list:
                         if self.filter[server.id][w]["action"] == "mute":
-                            mute_filter += w + " (Duration: " + str(self.filter[server.id][w]["duration"]) + " " + \
+                            mute_filter += w + " (Duration: " + str(self.filter[server.id][w]["duration"]) + " " + 
                                            self.filter[server.id][w]["unit"] + ") "
                             continue
                         elif self.filter[server.id][w]["action"] == "ban":
