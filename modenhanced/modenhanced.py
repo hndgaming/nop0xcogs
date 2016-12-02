@@ -628,12 +628,12 @@ class modenhanced:
     @commands.command(name="botswap", pass_context=True)
     @checks.admin_or_permissions(manage_channels=True)
     async def botswap(self,ctx, member:discord.Member, channel:discord.Channel):
-        await self.bot.ban(member, 0)
+        #await self.bot.ban(member, 0)
         data = discord.Embed(colour=discord.Colour.red())
-        data.set_author(name="Moderation Log")
-        data.set_image(url="http://gameranx.com/wp-content/uploads/2016/05/Overwatch6.jpg")
+        data.set_author(name="Update")
+        data.set_image(url="http://i.imgur.com/sKkcFLw.png")
         data.add_field(name="Action: Banned D.Va from the Server.", value="There is only room for one Modbot, bitch.")
-        await self.bot.say(channel, embed=data)
+        await self.bot.send_message(channel, embed=data)
 
     @commands.command(name="mute", pass_context=True)
     async def manual_mute(self, ctx, member: discord.Member, duration: int, unit: str, reason: str):
