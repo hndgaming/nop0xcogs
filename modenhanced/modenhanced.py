@@ -1618,3 +1618,4 @@ class CaseMessageNotFound(ModError):
 
 
 class NoModLogChannel(ModError):
+    pass
