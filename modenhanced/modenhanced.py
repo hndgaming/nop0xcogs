@@ -32,6 +32,7 @@ class modenhanced:
         self.settings = defaultdict(lambda: default_settings.copy(), settings)
         self.cache = defaultdict(lambda: deque(maxlen=3))
         self.cases = dataIO.load_json("data/modenhanced/modlog.json")
+        self.slowmode = dataIO.load_json("data/modenhanced/slowmode.json")
         self._tmp_banned_cache = []
         self.last_case = defaultdict(lambda: dict())
 
@@ -103,6 +104,22 @@ class modenhanced:
             await self.bot.say("Remember to set adminrole too.")
         settings.set_server_mod(server, role_name)
         await self.bot.say("Mod role set to '{}'".format(role_name))
+        
+    @modset.command(name="slowmode", pass_context=True, no_pm=True)
+    async def _modset_slowmode(self, ctx):
+        """Toggles Slowmode for all Chats.."""
+        server = ctx.message.server
+        try:
+            if self.settings[server.id]["slowmode"]["enabled"]:
+                self.settings[server.id]["slowmode"]["enabled"] = False
+            else:
+                self.settings[server.id]["slowmode"]["enabled"] = True
+        except:
+            self.settings[server.id] = {}
+            self.settings[server.id]["slowmode"] = {}
+            self.settings[server.id]["slowmode"]["enabled"] = True
+        dataIO.save_json("data/modenhanced/settings.json", self.settings)
+        await self.bot.say("Slowmode toggled to "+ self.settings[server.id]["slowmode"]["enabled"])
 
     @modset.command(pass_context=True, no_pm=True)
     async def modlog(self, ctx, channel : discord.Channel=None):
@@ -1271,6 +1288,25 @@ class modenhanced:
     async def on_member_remove(self, member):
         ts = datetime.datetime.now().strftime('%H:%M:%S') 
         await self.appendmodlog_ne("`" +ts + "` :no_entry: __**" + member.name +"#"+ str(member.discriminator)+"**__ *(" + member.id+")* **left the server**", member.server)
+        
+    async def rate_limit(self, message):
+        rate = 5.0; // unit: messages
+        per  = 8.0; // unit: seconds
+        allowance = rate; // unit: messages
+        last_check = now(); // floating-point, e.g. usec accuracy. Unit: seconds
+
+        when (message_received):
+            current = now();
+            time_passed = current - last_check;
+            last_check = current;
+            allowance += time_passed * (rate / per);
+            if (allowance > rate):
+                allowance = rate; // throttle
+            if (allowance < 1.0):
+                discard_message();
+            else:
+                forward_message();
+                allowance -= 1.0;
     
     async def on_message_delete(self, message):
         if message.channel.is_private or self.bot.user == message.author:
@@ -1280,17 +1316,15 @@ class modenhanced:
             return
         ts = datetime.datetime.now().strftime('%H:%M:%S') 
         if len(message.content) > 40: 
-            await self.appendmodlog_ne("`"+ ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(message.author.discriminator) + "** *deleted his/her message* \n " + message.clean_content + "", message.server)
+            await self.appendmodlog_ne("`"+ ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(message.author.discriminator) + "** *deleted his/her message* \n " + message.content + "", message.server)
         else:
-            await self.appendmodlog_ne("`"+ ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(message.author.discriminator) + "** *deleted his/her message* \n " + message.clean_content + "", message.server)
+            await self.appendmodlog_ne("`"+ ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(message.author.discriminator) + "** *deleted his/her message* \n " + message.content + "", message.server)
         
     async def on_message_edit(self, before, after):
         if before.channel.is_private or self.bot.user == before.author:
             return
         current_ch = before.channel
         if current_ch.id in self.ignore_list["CHANNELS"]:
-            return
-        if before.content == after.content:
             return
         escaped = before.content.translate(str.maketrans({"`":  r"\`",
                                           "*":  r"\*`]",
@@ -1299,6 +1333,9 @@ class modenhanced:
                                           "*":  r"\*`]",
                                           "_": r"\_`"}))
         ts = datetime.datetime.now().strftime('%H:%M:%S') 
+        await self.appendmodlog_ne("`" + ts + "` " + before.channel.mention + " :pencil2: **" + before.author.name + "#" + str(before.author.discriminator) + "** *edited his/her message:* "+ 
+                                   "\n**Original:** \n " + escaped + " \n" + 
+                                    "**Update:** \n " + escaped2 , before.server)
         await self.appendmodlog_ne("`" + ts + "` " + before.channel.mention + " :pencil2: **" + before.author.name + "#" + str(before.author.discriminator) + "** *edited his/her message:* "+ 
                                    "\n**Original:** \n " + before.clean_content + " \n" + 
                                     "**Update:** \n " + after.clean_content , before.server)
@@ -1497,7 +1534,10 @@ def check_files():
     if not os.path.isfile("data/modenhanced/rules.json"):
         print("Creating empty rules.json...")
         dataIO.save_json("data/modenhanced/rules.json", {})
-
+        
+    if not os.path.isfile("data/modenhanced/slowmode.json"):
+        print("Creating empty rules.json...")
+        dataIO.save_json("data/modenhanced/slowmode.json", {})
 
 def setup(bot):
     global logger
