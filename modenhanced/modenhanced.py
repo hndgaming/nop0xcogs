@@ -1187,6 +1187,8 @@ class modenhanced:
             return True
         elif discord.utils.get(user.roles, name=mod_role):
             return True
+        elif discord.utils.get(user.roles, name="Omnic"):
+            return True
         else:
             return False
 
