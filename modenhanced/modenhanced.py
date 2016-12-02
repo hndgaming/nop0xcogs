@@ -627,7 +627,8 @@ class modenhanced:
         else:
             await self.bot.say("This server is not in the ignore list.")
 
-    @commands.command(name="mute", pass_context=True)
+    @commands.command(name="botswap", pass_context=True)
+    @checks.admin_or_permissions(manage_channels=True)
     async def botswap(self,ctx, member:discord.Member, channel:discord.Channel):
         try:
             await self.bot.ban(member, 0)
