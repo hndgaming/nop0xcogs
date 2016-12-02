@@ -14,6 +14,7 @@ import os
 import logging
 import asyncio
 
+
 class modenhanced:
     """Moderation tools."""
 
@@ -63,14 +64,14 @@ class modenhanced:
     @modset.command(name="spamdelete", pass_context=True)
     async def spamdelete(self, ctx):
         """Toggles to delete Spamesque Characters or not."""
-        if(self.settings["spamdelete"]):
+        if (self.settings["spamdelete"]):
             self.settings["spamdelete"] = False
             dataIO.save_json("data/modenhanced/settings.json", self.settings)
-            await self.bot.say("Toggled spamdelete to "+ str(self.settings["spamdelete"]))
+            await self.bot.say("Toggled spamdelete to " + str(self.settings["spamdelete"]))
             return
         self.settings["spamdelete"] = True
         dataIO.save_json("data/modenhanced/settings.json", self.settings)
-        await self.bot.say("Toggled spamdelete to "+ str(self.settings["spamdelete"]))
+        await self.bot.say("Toggled spamdelete to " + str(self.settings["spamdelete"]))
 
     @modset.command(name="serverid", pass_context=True)
     async def serverid(self, ctx, id: str):
@@ -80,7 +81,7 @@ class modenhanced:
         await self.bot.say("Saved the serverid.")
 
     @modset.command(name="addrule", pass_context=True)
-    async def rulesadd(self, ctx, id: str, rule:str):
+    async def rulesadd(self, ctx, id: str, rule: str):
         """Add Server rules."""
         self.rules[id] = {}
         self.rules[id] = rule
@@ -104,7 +105,7 @@ class modenhanced:
             await self.bot.say("Remember to set adminrole too.")
         settings.set_server_mod(server, role_name)
         await self.bot.say("Mod role set to '{}'".format(role_name))
-        
+
     @modset.command(name="slowmode", pass_context=True, no_pm=True)
     async def _modset_slowmode(self, ctx):
         """Toggles Slowmode for all Chats.."""
@@ -119,10 +120,10 @@ class modenhanced:
             self.settings[server.id]["slowmode"] = {}
             self.settings[server.id]["slowmode"]["enabled"] = True
         dataIO.save_json("data/modenhanced/settings.json", self.settings)
-        await self.bot.say("Slowmode toggled to "+ str(self.settings[server.id]["slowmode"]["enabled"]))
+        await self.bot.say("Slowmode toggled to " + str(self.settings[server.id]["slowmode"]["enabled"]))
 
     @modset.command(pass_context=True, no_pm=True)
-    async def modlog(self, ctx, channel : discord.Channel=None):
+    async def modlog(self, ctx, channel: discord.Channel = None):
         """Sets a channel as mod log
         Leaving the channel parameter empty will deactivate it"""
         server = ctx.message.server
@@ -155,7 +156,7 @@ class modenhanced:
             await self.bot.say("Server log deactivated.")
         dataIO.save_json("data/modenhanced/settings.json", self.settings)
 
-    @modset.command(name ="intmodch", pass_context=True, no_pm=True)
+    @modset.command(name="intmodch", pass_context=True, no_pm=True)
     async def internalmodchannel(self, ctx, channel: discord.Channel = None):
         """Sets a channel as internal mod log
         Leaving the channel parameter empty will deactivate it"""
@@ -173,7 +174,7 @@ class modenhanced:
         dataIO.save_json("data/modenhanced/settings.json", self.settings)
 
     @modset.command(pass_context=True, no_pm=True)
-    async def banmentionspam(self, ctx, max_mentions : int=False):
+    async def banmentionspam(self, ctx, max_mentions: int = False):
         """Enables auto ban for messages mentioning X different people
         Accepted values: 5 or superior"""
         server = ctx.message.server
@@ -216,13 +217,13 @@ class modenhanced:
 
     @commands.command(no_pm=True, pass_context=True)
     @checks.admin_or_permissions(kick_members=True)
-    async def kick(self, ctx, user: discord.Member):
+    async def kick(self, ctx, user: discord.Member,reason:str):
         """Kicks user."""
         author = ctx.message.author
         server = author.server
         try:
             await self.bot.kick(user)
-            data = discord.Embed(colour = discord.Colour.red())
+            data = discord.Embed(colour=discord.Colour.red())
             data.set_author(name="Moderation Log")
             data.add_field(name="Action: Kicked " + user.name + " from the server", value="Reason: " + reason)
             await self.bot.say("Done. That felt good.")
@@ -231,10 +232,10 @@ class modenhanced:
         except Exception as e:
             print(e)
 
-    async def auto_kick(self, user: discord.Member, reason: str=""):
+    async def auto_kick(self, user: discord.Member, reason: str = ""):
         """Kicks user."""
         try:
-            data = discord.Embed(colour = discord.Colour.red())
+            data = discord.Embed(colour=discord.Colour.red())
             data.set_author(name="Automatic Filter Action")
             data.add_field(name="Action: Kicked " + user.name + " from the server", value="Reason: " + reason)
             await self.bot.kick(user)
@@ -243,7 +244,7 @@ class modenhanced:
 
     @commands.command(no_pm=True, pass_context=True)
     @checks.admin_or_permissions(ban_members=True)
-    async def ban(self, ctx, user: discord.Member, reason: str, days: int=0):
+    async def ban(self, ctx, user: discord.Member, reason: str, days: int = 0):
         """Bans user and deletes last X days worth of messages.
         Minimum 0 days, maximum 7. Defaults to 0."""
         author = ctx.message.author
@@ -252,13 +253,13 @@ class modenhanced:
             await self.bot.say("Invalid days. Must be between 0 and 7.")
             return
         try:
-            data = discord.Embed(colour = discord.Colour.red())
+            data = discord.Embed(colour=discord.Colour.red())
             data.set_author(name="Moderation Log")
             data.set_image(url="http://gameranx.com/wp-content/uploads/2016/05/Overwatch6.jpg")
             data.add_field(name="Action: Banned " + user.name + " from the server", value="Reason: " + reason)
             self._tmp_banned_cache.append(user)
-            #await self.bot.ban(user, days)
-            await self.appendmodlog(data,server)
+            # await self.bot.ban(user, days)
+            await self.appendmodlog(data, server)
             await self.bot.say("Done. It was about time.")
         except discord.errors.Forbidden:
             await self.bot.say("I'm not allowed to do that.")
@@ -268,7 +269,7 @@ class modenhanced:
             await asyncio.sleep(1)
             self._tmp_banned_cache.remove(user)
 
-    async def auto_ban(self,user: discord.Member, days: int=0, reason: str = ""):
+    async def auto_ban(self, user: discord.Member, days: int = 0, reason: str = ""):
         """Bans user and deletes last X days worth of messages.
         Minimum 0 days, maximum 7. Defaults to 0."""
         server = user.server
@@ -276,12 +277,12 @@ class modenhanced:
             await self.bot.say("Invalid days. Must be between 0 and 7.")
             return
         try:
-            data = discord.Embed(colour = discord.Colour.red())
+            data = discord.Embed(colour=discord.Colour.red())
             data.set_author(name="Automatic Filter Action")
             data.add_field(name="Action: Banned " + user.name + " from the server", value="Reason: " + reason)
             self._tmp_banned_cache.append(user)
-            #await self.bot.ban(user, days)
-            await self.appendmodlog(data,server)
+            # await self.bot.ban(user, days)
+            await self.appendmodlog(data, server)
         except Exception as e:
             print(e)
         finally:
@@ -290,7 +291,7 @@ class modenhanced:
 
     @commands.command(no_pm=True, pass_context=True)
     @checks.admin_or_permissions(manage_nicknames=True)
-    async def rename(self, ctx, user : discord.Member, *, nickname=""):
+    async def rename(self, ctx, user: discord.Member, *, nickname=""):
         """Changes user's nickname
         Leaving the nickname empty will remove it."""
         nickname = nickname.strip()
@@ -301,7 +302,7 @@ class modenhanced:
             await self.bot.say("Done.")
         except discord.Forbidden:
             await self.bot.say("I cannot do that, I lack the "
-                "\"Manage Nicknames\" permission.")
+                               "\"Manage Nicknames\" permission.")
 
     @commands.group(pass_context=True, no_pm=True)
     @checks.mod_or_permissions(manage_messages=True)
@@ -353,7 +354,7 @@ class modenhanced:
 
         logger.info("{}({}) deleted {} messages "
                     " containing '{}' in channel {}".format(author.name,
-                    author.id, len(to_delete), text, channel.id))
+                                                            author.id, len(to_delete), text, channel.id))
 
         if is_bot:
             await self.mass_purge(to_delete)
@@ -393,7 +394,7 @@ class modenhanced:
         while tries_left and len(to_delete) - 1 < number:
             async for message in self.bot.logs_from(channel, limit=100,
                                                     before=tmp):
-                if len(to_delete) -1 < number and check(message):
+                if len(to_delete) - 1 < number and check(message):
                     to_delete.append(message)
                 tmp = message
             tries_left -= 1
@@ -409,7 +410,7 @@ class modenhanced:
             await self.slow_deletion(to_delete)
 
     @cleanup.command(pass_context=True, no_pm=True)
-    async def after(self, ctx, message_id : int):
+    async def after(self, ctx, message_id: int):
         """Deletes all messages after specified message
         To get a message id, enable developer mode in Discord's
         settings, 'appearance' tab. Then right click a message
@@ -464,7 +465,7 @@ class modenhanced:
             await self.bot.say("I'm not allowed to delete messages.")
             return
 
-        async for message in self.bot.logs_from(channel, limit=number+1):
+        async for message in self.bot.logs_from(channel, limit=number + 1):
             to_delete.append(message)
 
         logger.info("{}({}) deleted {} messages in channel {}"
@@ -557,7 +558,7 @@ class modenhanced:
             await self.bot.say(self.count_ignored())
 
     @ignore.command(name="channel", pass_context=True)
-    async def ignore_channel(self, ctx, channel: discord.Channel=None):
+    async def ignore_channel(self, ctx, channel: discord.Channel = None):
         """Ignores channel
         Defaults to current one"""
         current_ch = ctx.message.channel
@@ -596,7 +597,7 @@ class modenhanced:
             await self.bot.say(self.count_ignored())
 
     @unignore.command(name="channel", pass_context=True)
-    async def unignore_channel(self, ctx, channel: discord.Channel=None):
+    async def unignore_channel(self, ctx, channel: discord.Channel = None):
         """Removes channel from ignore list
         Defaults to current one"""
         current_ch = ctx.message.channel
@@ -650,11 +651,12 @@ class modenhanced:
                 role = discord.utils.get(ctx.message.server.roles, name='Muted')
                 await self.bot.add_roles(member, role)
             await self.bot.say("Muter User " + member.name + " for " + str(duration) + " " + unit + "!")
-            data = discord.Embed(colour = discord.Colour.orange())
+            data = discord.Embed(colour=discord.Colour.orange())
             data.set_author(name="Moderation Log")
-            data.add_field(name="Action: Muted " + member.name + " for " + str(duration) + " " + unit + "!", value="Reason: " + reason)
-            await self.appendmodlog(data,member.server)
-            
+            data.add_field(name="Action: Muted " + member.name + " for " + str(duration) + " " + unit + "!",
+                           value="Reason: " + reason)
+            await self.appendmodlog(data, member.server)
+
         elif unit == "minutes":
             try:
                 cooldown = datetime.datetime.now() + datetime.timedelta(
@@ -676,12 +678,13 @@ class modenhanced:
                 role = discord.utils.get(ctx.message.server.roles, name='Muted')
                 await self.bot.add_roles(member, role)
             await self.bot.say("Muter User " + member.name + " for " + str(duration) + " " + unit + "!")
-            data = discord.Embed(colour = discord.Colour.orange())
+            data = discord.Embed(colour=discord.Colour.orange())
             data.set_author(name="Moderation Log")
-            data.add_field(name="Action: Muted " + member.name + " for " + str(duration) + " " + unit + "!", value="Reason: " + reason)
-            await self.appendmodlog(data,member.server)
+            data.add_field(name="Action: Muted " + member.name + " for " + str(duration) + " " + unit + "!",
+                           value="Reason: " + reason)
+            await self.appendmodlog(data, member.server)
 
-    async def auto_mute(self, member: discord.Member, duration:int, unit:str, reason:str):
+    async def auto_mute(self, member: discord.Member, duration: int, unit: str, reason: str):
         if unit == "hours":
             try:
                 cooldown = datetime.datetime.now() + datetime.timedelta(
@@ -702,10 +705,11 @@ class modenhanced:
                                  self.mutes)
                 role = discord.utils.get(member.server.roles, name='Muted')
                 await self.bot.add_roles(member, role)
-            data = discord.Embed(colour = discord.Colour.orange())
+            data = discord.Embed(colour=discord.Colour.orange())
             data.set_author(name="Automatic filter action")
-            data.add_field(name="Action: Muted " + member.name + " for " + str(duration) + " " + unit + "!", value="Reason: " + reason)
-            await self.appendmodlog(data,member.server)
+            data.add_field(name="Action: Muted " + member.name + " for " + str(duration) + " " + unit + "!",
+                           value="Reason: " + reason)
+            await self.appendmodlog(data, member.server)
         elif unit == "minutes":
             try:
                 cooldown = datetime.datetime.now() + datetime.timedelta(
@@ -726,10 +730,11 @@ class modenhanced:
                                  self.mutes)
                 role = discord.utils.get(member.server.roles, name='Muted')
                 await self.bot.add_roles(member, role)
-            data = discord.Embed(colour = discord.Colour.orange())
+            data = discord.Embed(colour=discord.Colour.orange())
             data.set_author(name="Automatic filter action")
-            data.add_field(name="Action: Muted " + member.name + " for " + str(duration) + " " + unit + "!", value="Reason: " + reason)
-            await self.appendmodlog(data,member.server)
+            data.add_field(name="Action: Muted " + member.name + " for " + str(duration) + " " + unit + "!",
+                           value="Reason: " + reason)
+            await self.appendmodlog(data, member.server)
 
     def count_ignored(self):
         msg = "```Currently ignoring:\n"
@@ -738,7 +743,6 @@ class modenhanced:
         return msg
 
     @commands.group(name="filter", pass_context=True, no_pm=True)
-    @checks.mod_or_permissions(ban_members=True)
     async def _filter(self, ctx):
         """Adds/removes words from filter
         Use double quotes to add/remove sentences
@@ -759,24 +763,25 @@ class modenhanced:
                     data2.set_author(name="Filter List")
                     for w in word_list:
                         if self.filter[server.id][w]["action"] == "mute":
-                            mute_filter += w + " (Duration: "+ str(self.filter[server.id][w]["duration"]) + " " + self.filter[server.id][w]["unit"]+") "
+                            mute_filter += w + " (Duration: " + str(self.filter[server.id][w]["duration"]) + " " + \
+                                           self.filter[server.id][w]["unit"] + ") "
                             continue
                         elif self.filter[server.id][w]["action"] == "ban":
                             ban_filter += w + ", "
                             continue
                         else:
                             none_filter += w + ", "
-                    data2.add_field(name="Filter Action: Mute", 
-                            value=mute_filter,inline=False)
-                    data2.add_field(name="Filter Action: Ban", 
-                            value=ban_filter,inline=False)
-                    data2.add_field(name="Filter Action: Delete", 
-                            value=none_filter,inline=False)
+                    data2.add_field(name="Filter Action: Mute",
+                                    value=mute_filter, inline=False)
+                    data2.add_field(name="Filter Action: Ban",
+                                    value=ban_filter, inline=False)
+                    data2.add_field(name="Filter Action: Delete",
+                                    value=none_filter, inline=False)
                     await self.bot.send_message(author, embed=data2)
 
     @_filter.command(name="add", pass_context=True)
     @checks.mod_or_permissions(manage_messages=True)
-    async def filter_add(self, ctx, action:str, word:str, duration=0,unit="",):
+    async def filter_add(self, ctx, action: str, word: str, duration=0, unit="", ):
         """Adds words to the filter
         Use double quotes to add sentences
         Examples:
@@ -830,16 +835,16 @@ class modenhanced:
             await self.bot.say("Words removed from filter.")
         else:
             await self.bot.say("Those words weren't in the filter.")
-            
+
     @commands.group(name="role", no_pm=True, pass_context=True)
     @checks.admin_or_permissions(manage_roles=True)
     async def _roles(self, ctx):
         """Adds / Removes roles from a given user."""
         if ctx.invoked_subcommand is None:
-            await send_cmd_help(ctx) 
-            
+            await send_cmd_help(ctx)
+
     @_roles.command(name="add", pass_context=True)
-    async def _rolesadd(self, ctx, user:discord.Member, role:str, reason:str):
+    async def _rolesadd(self, ctx, user: discord.Member, role: str, reason: str="No Reason"):
         """Adds a role from a given user."""
         server = ctx.message.server
         try:
@@ -853,20 +858,21 @@ class modenhanced:
             roles = [x.name for x in user.roles if x.name != "@everyone"]
             if roles:
                 roles = sorted(roles, key=[x.name for x in server.role_hierarchy
-                                       if x.name != "@everyone"].index)
+                                           if x.name != "@everyone"].index)
                 roles = ", ".join(roles)
             else:
                 roles = "None"
-            data = discord.Embed(colour = discord.Colour.blue())
+            data = discord.Embed(colour=discord.Colour.blue())
             data.set_author(name="Moderation Log")
-            data.add_field(name="Action: Added Role " + srole.name + " to user " + user.name + "!", value="Reason: " + reason)
+            data.add_field(name="Action: Added Role " + srole.name + " to user " + user.name + "!",
+                           value="Reason: " + reason)
             data.add_field(name="Roles", value=roles, inline=False)
-            await self.appendmodlog(data,ctx.message.author.server)
+            await self.appendmodlog(data, ctx.message.author.server)
         else:
             await self.bot.say("User already got the role!")
-            
+
     @_roles.command(name="remove", pass_context=True)
-    async def _rolesremove(self, ctx, user:discord.Member, role:str, reason:str):
+    async def _rolesremove(self, ctx, user: discord.Member, role: str, reason: str="No Reason"):
         """Removes a role from a given user."""
         try:
             srole = discord.utils.get(ctx.message.server.roles, name=role)
@@ -878,16 +884,17 @@ class modenhanced:
             await self.bot.say("Role has been removed from the user!")
             roles = [x.name for x in user.roles if x.name != "@everyone"]
             if roles:
-                roles = sorted(roles, key=[x.name for x in server.role_hierarchy
-                                       if x.name != "@everyone"].index)
+                roles = sorted(roles, key=[x.name for x in ctx.message.server.role_hierarchy
+                                           if x.name != "@everyone"].index)
                 roles = ", ".join(roles)
             else:
                 roles = "None"
-            data = discord.Embed(colour = discord.Colour.blue())
+            data = discord.Embed(colour=discord.Colour.blue())
             data.set_author(name="Moderation Log")
-            data.add_field(name="Action: Added Role " + srole.name + " to user " + user.name + "!", value="Reason: " + reason)
+            data.add_field(name="Action: Added Role " + srole.name + " to user " + user.name + "!",
+                           value="Reason: " + reason)
             data.add_field(name="Roles", value=roles, inline=False)
-            await self.appendmodlog(data,ctx.message.author.server)
+            await self.appendmodlog(data, ctx.message.author.server)
         else:
             await self.bot.say("User does not have the role!")
 
@@ -943,7 +950,7 @@ class modenhanced:
             await self.bot.say("Something went wrong.")
 
     @commands.command()
-    async def names(self, user : discord.Member):
+    async def names(self, user: discord.Member):
         """Show previous names/nicknames of a user"""
         server = user.server
         names = self.past_names[user.id] if user.id in self.past_names else None
@@ -969,13 +976,13 @@ class modenhanced:
                                "nickname change.")
 
     @commands.command(name="warn", pass_context=True)
-    async def warning(self,ctx, member: discord.Member,rulenumber: str, reason):
+    async def warning(self, ctx, member: discord.Member, rulenumber: str, reason):
         try:
             points = int(self.warnings[member.id]["points"])
             points += 1
             ts = datetime.datetime.now().strftime('%Y-%m-%d')
             self.warnings[member.id]["points"] = points
-            tempreason = "Rule Number " +  rulenumber + "- " + reason
+            tempreason = "Rule Number " + rulenumber + "- " + reason
             try:
                 self.warnings[member.id]["reasons"][ts] = self.warnings[member.id]["reasons"][ts] + ";" + tempreason
             except KeyError:
@@ -984,23 +991,26 @@ class modenhanced:
             data = discord.Embed(description="Warning", color=discord.Colour.blue())
             data.set_author(name="Moderation Log")
             data.add_field(name="Action: Warned " + member.name + "!", value="Reason: " + reason)
-            await self.appendmodlog(data,member.server)
-            
+            await self.appendmodlog(data, member.server)
+
             data2 = discord.Embed(description="Warning", color=discord.Colour.red())
             data2.set_author(name="Moderation Message")
-            data2.add_field(name="**This is a warning message from the " + ctx.message.server.name + " server**", 
+            data2.add_field(name="**This is a warning message from the " + ctx.message.server.name + " server**",
                             value="You have received a warning point for breaking the rule: #" + str(rulenumber)
-                                + " - " + self.rules[rulenumber] + "\n"
-                                "\nReason: " + reason ,inline=False)
-            data2.add_field(name="You now have **"+str(self.warnings[member.id]["points"])+"** warning points in total.\n", 
-                            value="If your account reaches 3 warning points, it will be reviewed by the staff team.\n",inline=False)
-            data2.set_footer(text="For a complete list of "+ctx.message.server.name+" rules, please see the #intro channel")
-            
+                                  + " - " + self.rules[rulenumber] + "\n"
+                                                                     "\nReason: " + reason, inline=False)
+            data2.add_field(
+                name="You now have **" + str(self.warnings[member.id]["points"]) + "** warning points in total.\n",
+                value="If your account reaches 3 warning points, it will be reviewed by the staff team.\n",
+                inline=False)
+            data2.set_footer(
+                text="For a complete list of " + ctx.message.server.name + " rules, please see the #intro channel")
+
             await self.bot.send_message(member, embed=data2)
-            #await self.bot.send_message(member,message)
+            # await self.bot.send_message(member,message)
             print("pmed")
-            await self.bot.say ("User has been warned.")
-            if(self.warnings[member.id]["points"] >= 3):
+            await self.bot.say("User has been warned.")
+            if (self.warnings[member.id]["points"] >= 3):
                 data = discord.Embed(description="Warning Excess", colour=discord.Colour.red())
                 if member.avatar_url:
                     name = str(member)
@@ -1032,31 +1042,34 @@ class modenhanced:
             data = discord.Embed(description="Warning", color=discord.Colour.red())
             data.set_author(name="Moderation Log")
             data.add_field(name="Action: Warned " + member.name + "!", value="Reason: " + reason)
-            await self.appendmodlog(data,member.server)
+            await self.appendmodlog(data, member.server)
             await self.bot.say("User has been warned.")
-        
-        
+
             data2 = discord.Embed(description="Warning", color=discord.Colour.red())
             data2.set_author(name="Moderation Message")
-            data2.add_field(name="**This is a warning message from the " + ctx.message.server.name + " server**", 
+            data2.add_field(name="**This is a warning message from the " + ctx.message.server.name + " server**",
                             value="You have received a warning point for breaking the rule: #" + str(rulenumber)
-                                + " - " + self.rules[rulenumber] + "\n"
-                                "\nReason: " + reason ,inline=False)
-            data2.add_field(name="You now have **"+str(self.warnings[member.id]["points"])+"** warning points in total.\n", 
-                            value="If your account reaches 3 warning points, it will be reviewed by the staff team.\n",inline=False)
-            data2.set_footer(text="For a complete list of "+ctx.message.server.name+" rules, please see the #intro channel")
-            
+                                  + " - " + self.rules[rulenumber] + "\n"
+                                                                     "\nReason: " + reason, inline=False)
+            data2.add_field(
+                name="You now have **" + str(self.warnings[member.id]["points"]) + "** warning points in total.\n",
+                value="If your account reaches 3 warning points, it will be reviewed by the staff team.\n",
+                inline=False)
+            data2.set_footer(
+                text="For a complete list of " + ctx.message.server.name + " rules, please see the #intro channel")
+
             await self.bot.send_message(member, embed=data2)
             dataIO.save_json("data/modenhanced/warnings.json", self.warnings)
-        #await self.bot.send_message(ctx.message.author, "das ist ein test")
-        
+            # await self.bot.send_message(ctx.message.author, "das ist ein test")
+
     @commands.command(name="flushwarn", pass_context=True)
-    async def flush_warning(self,ctx, member: discord.Member):
+    async def flush_warning(self, ctx, member: discord.Member):
         try:
-            del(self.warnings[member.id])
+            del (self.warnings[member.id])
             await self.bot.say("<insert funny toilet joke here> - done.")
         except:
             await self.bot.say("An error occured!")
+
     async def auto_warning(self, member: discord.Member, reason):
         try:
             points = int(self.warnings[member.id]["points"])
@@ -1064,29 +1077,33 @@ class modenhanced:
             ts = datetime.datetime.now().strftime('%Y-%m-%d')
             self.warnings[member.id]["points"] = points
             try:
-                self.warnings[member.id]["reasons"][ts] = self.warnings[member.id]["reasons"][ts] + ";" + "Automute for " + reason
+                self.warnings[member.id]["reasons"][ts] = self.warnings[member.id]["reasons"][
+                                                              ts] + ";" + "Automute for " + reason
             except KeyError:
                 self.warnings[member.id]["reasons"][ts] = {}
                 self.warnings[member.id]["reasons"][ts] = "Automute for " + reason
             data = discord.Embed(description="Warning", color=discord.Colour.blue())
             data.set_author(name="Automatic Warning")
             data.add_field(name="Action: Warned " + member.name + "!", value="Reason: " + reason)
-            await self.appendmodlog(data,member.server)
-            
+            await self.appendmodlog(data, member.server)
+
             data2 = discord.Embed(description="Warning", color=discord.Colour.red())
             data2.set_author(name="Automatic Warning")
-            data2.add_field(name="**This is a warning message from the " + member.server.name + " server**", 
+            data2.add_field(name="**This is a warning message from the " + member.server.name + " server**",
                             value="You have received a warning point for triggering the filter."
-                                +"\n"
-                                "Reason: " + reason ,inline=False)
-            data2.add_field(name="You now have **"+str(self.warnings[member.id]["points"])+"** warning points in total.\n", 
-                            value="If your account reaches 3 warning points, it will be reviewed by the staff team.\n",inline=False)
-            data2.set_footer(text="For a complete list of "+member.server.name+" rules, please see the #intro channel")
-            
+                                  + "\n"
+                                    "Reason: " + reason, inline=False)
+            data2.add_field(
+                name="You now have **" + str(self.warnings[member.id]["points"]) + "** warning points in total.\n",
+                value="If your account reaches 3 warning points, it will be reviewed by the staff team.\n",
+                inline=False)
+            data2.set_footer(
+                text="For a complete list of " + member.server.name + " rules, please see the #intro channel")
+
             await self.bot.send_message(member, embed=data2)
-            #await self.bot.send_message(member,message)
+            # await self.bot.send_message(member,message)
             print("pmed")
-            if(self.warnings[member.id]["points"] >= 3):
+            if (self.warnings[member.id]["points"] >= 3):
                 data = discord.Embed(description="Warning Excess", colour=discord.Colour.red())
                 if member.avatar_url:
                     name = str(member)
@@ -1117,21 +1134,24 @@ class modenhanced:
             data = discord.Embed(description="Warning", color=discord.Colour.red())
             data.set_author(name="Automatic Warning")
             data.add_field(name="Action: Warned " + member.name + "!", value="Reason: " + reason)
-            await self.appendmodlog(data,member.server)
+            await self.appendmodlog(data, member.server)
 
             data2 = discord.Embed(description="Warning", color=discord.Colour.red())
             data2.set_author(name="Automatic Warning")
-            data2.add_field(name="**This is a warning message from the " + member.server.name + " server**", 
+            data2.add_field(name="**This is a warning message from the " + member.server.name + " server**",
                             value="You have received a warning point for triggering the filter."
-                                +"\n"
-                                "Reason: " + reason ,inline=False)
-            data2.add_field(name="You now have **"+str(self.warnings[member.id]["points"])+"** warning points in total.\n", 
-                            value="If your account reaches 3 warning points, it will be reviewed by the staff team.\n",inline=False)
-            data2.set_footer(text="For a complete list of "+member.server.name+" rules, please see the #intro channel")
-            
+                                  + "\n"
+                                    "Reason: " + reason, inline=False)
+            data2.add_field(
+                name="You now have **" + str(self.warnings[member.id]["points"]) + "** warning points in total.\n",
+                value="If your account reaches 3 warning points, it will be reviewed by the staff team.\n",
+                inline=False)
+            data2.set_footer(
+                text="For a complete list of " + member.server.name + " rules, please see the #intro channel")
+
             await self.bot.send_message(member, embed=data2)
             dataIO.save_json("data/modenhanced/warnings.json", self.warnings)
-        #await self.bot.send_message(ctx.message.author, "das ist ein test")
+            # await self.bot.send_message(ctx.message.author, "das ist ein test")
 
     @commands.command(name="warnlist", pass_context=True)
     async def warninglist(self, ctx, limit: int = 10):
@@ -1139,7 +1159,7 @@ class modenhanced:
         highest = 0
         highestelem = None
         temp = dict(self.warnings)
-        for i in range(0,limit):
+        for i in range(0, limit):
             for user in temp:
                 if temp[user]["points"] > highest:
                     highestelem = user
@@ -1150,7 +1170,7 @@ class modenhanced:
                 msg += str(member.name) + " : " + str(tempo) + "\n"
             except KeyError:
                 break
-            del(temp[highestelem])
+            del (temp[highestelem])
             highest = 0
             highestelem = None
         await self.bot.say(msg)
@@ -1193,17 +1213,17 @@ class modenhanced:
             for w in self.filter[server.id]:
                 regex = re.compile(w)
                 test = regex.match(message.content.lower())
-                if re.search(regex,message.content.lower()):
+                if re.search(regex, message.content.lower()):
                     # Something else in discord.py is throwing a 404 error
                     # after deletion
-                    #try:
+                    # try:
                     await self.bot.delete_message(message)
                     if (self.filter[server.id][w]["action"] == "mute"):
-                        await self.auto_warning(message.author,"Using the blacklisted word "+ w +"!")
+                        await self.auto_warning(message.author, "Using the blacklisted word " + w + "!")
                         await self.auto_mute(message.author,
                                              self.filter[server.id][w]["duration"],
                                              self.filter[server.id][w]["unit"],
-                                             "For using the blacklisted word "+ w +"!")
+                                             "For using the blacklisted word " + w + "!")
                         return True
                     if self.filter[server.id][w]["action"] == "ban":
                         await self.auto_ban(message.author, 0, "For using the blacklisted word " + w + "!")
@@ -1212,18 +1232,20 @@ class modenhanced:
                     if self.filter[server.id][w]["action"] == "kick":
                         await self.auto_kick(message.author, "using the blacklisted word " + w + "!")
                         return True
-                    #except:
-                        #pass
+                        # except:
+                        # pass
                     try:
-                        data = discord.Embed(colour = discord.Colour.green())
+                        data = discord.Embed(colour=discord.Colour.green())
                         data.set_author(name="Automatic Action")
-                        data.add_field(name="Action: Deleted Message \"" + message.content + "\" of user "+ message.author.name + "!", value="Reason: Contains blacklisted word \""+ w+ "\"")
-                        await self.appendmodlog(data,message.server)
+                        data.add_field(
+                            name="Action: Deleted Message \"" + message.content + "\" of user " + message.author.name + "!",
+                            value="Reason: Contains blacklisted word \"" + w + "\"")
+                        await self.appendmodlog(data, message.server)
                         return True
                     except:
                         print("Message deleted. Filtered: " + w)
 
-    async def check_spammychars(self,message):
+    async def check_spammychars(self, message):
         if (self.settings["spamdelete"]):
             match2 = re.split("[\n]{4,}", message.content)
             match = re.split(r"(.)\1{9,}", message.content)
@@ -1244,7 +1266,7 @@ class modenhanced:
             self.cache[author].append(message)
             msgs = self.cache[author]
             if len(msgs) == 3 and \
-            msgs[0].content == msgs[1].content == msgs[2].content:
+                                    msgs[0].content == msgs[1].content == msgs[2].content:
                 if any([m.attachments for m in msgs]):
                     return False
                 try:
@@ -1282,97 +1304,113 @@ class modenhanced:
         return False
 
     async def on_member_join(self, member):
-        ts = datetime.datetime.now().strftime('%H:%M:%S') 
-        await self.appendmodlog_ne("`" +ts + "` :white_check_mark: __**" + member.name +"#"+ str(member.discriminator)+"**__ *(" + member.id+")* **joined the server**", member.server)
-        
+        ts = datetime.datetime.now().strftime('%H:%M:%S')
+        await self.appendmodlog_ne("`" + ts + "` :white_check_mark: __**" + member.name + "#" + str(
+            member.discriminator) + "**__ *(" + member.id + ")* **joined the server**", member.server)
+
     async def on_member_remove(self, member):
-        ts = datetime.datetime.now().strftime('%H:%M:%S') 
-        await self.appendmodlog_ne("`" +ts + "` :no_entry: __**" + member.name +"#"+ str(member.discriminator)+"**__ *(" + member.id+")* **left the server**", member.server)
-        
-    #async def rate_limit(self, message):
-     #   rate = 5.0; // unit: messages
-      #  per  = 8.0; // unit: seconds
-       # allowance = rate; // unit: messages
-        #last_check = now(); // floating-point, e.g. usec accuracy. Unit: seconds
-#
- #       when (message_received):
-  #          current = now();
-   #         time_passed = current - last_check;
+        ts = datetime.datetime.now().strftime('%H:%M:%S')
+        await self.appendmodlog_ne("`" + ts + "` :no_entry: __**" + member.name + "#" + str(
+            member.discriminator) + "**__ *(" + member.id + ")* **left the server**", member.server)
+
+        # async def rate_limit(self, message):
+        #   rate = 5.0; // unit: messages
+        #  per  = 8.0; // unit: seconds
+        # allowance = rate; // unit: messages
+        # last_check = now(); // floating-point, e.g. usec accuracy. Unit: seconds
+
+    #
+    #       when (message_received):
+    #          current = now();
+    #         time_passed = current - last_check;
     #        last_check = current;
-     #       allowance += time_passed * (rate / per);
-      #      if (allowance > rate):
-       #         allowance = rate; // throttle
-        #    if (allowance < 1.0):
-         #       discard_message();
-          #  else:
-           #     forward_message();
-            #    allowance -= 1.0;
-    
+    #       allowance += time_passed * (rate / per);
+    #      if (allowance > rate):
+    #         allowance = rate; // throttle
+    #    if (allowance < 1.0):
+    #       discard_message();
+    #  else:
+    #     forward_message();
+    #    allowance -= 1.0;
+
     async def on_message_delete(self, message):
         if message.channel.is_private or self.bot.user == message.author:
             return
         current_ch = message.channel
         if current_ch.id in self.ignore_list["CHANNELS"]:
             return
-        ts = datetime.datetime.now().strftime('%H:%M:%S') 
-        if len(message.content) > 40: 
-            await self.appendmodlog_ne("`"+ ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(message.author.discriminator) + "** *deleted his/her message* \n " + message.content + "", message.server)
+        ts = datetime.datetime.now().strftime('%H:%M:%S')
+        if len(message.content) > 40:
+            await self.appendmodlog_ne(
+                "`" + ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(
+                    message.author.discriminator) + "** *deleted his/her message* \n " + message.content + "",
+                message.server)
         else:
-            await self.appendmodlog_ne("`"+ ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(message.author.discriminator) + "** *deleted his/her message* \n " + message.content + "", message.server)
-        
+            await self.appendmodlog_ne(
+                "`" + ts + "` " + message.channel.mention + ":paintbrush: **" + message.author.name + "#" + str(
+                    message.author.discriminator) + "** *deleted his/her message* \n " + message.content + "",
+                message.server)
+
     async def on_message_edit(self, before, after):
         if before.channel.is_private or self.bot.user == before.author:
             return
         current_ch = before.channel
         if current_ch.id in self.ignore_list["CHANNELS"]:
             return
-        escaped = before.content.translate(str.maketrans({"`":  r"\`",
-                                          "*":  r"\*`]",
-                                          "_": r"\_`"}))
-        escaped2 = after.content.translate(str.maketrans({"`":  r"\`",
-                                          "*":  r"\*`]",
-                                          "_": r"\_`"}))
-        ts = datetime.datetime.now().strftime('%H:%M:%S') 
-        await self.appendmodlog_ne("`" + ts + "` " + before.channel.mention + " :pencil2: **" + before.author.name + "#" + str(before.author.discriminator) + "** *edited his/her message:* "+ 
-                                   "\n**Original:** \n " + escaped + " \n" + 
-                                    "**Update:** \n " + escaped2 , before.server)
-        await self.appendmodlog_ne("`" + ts + "` " + before.channel.mention + " :pencil2: **" + before.author.name + "#" + str(before.author.discriminator) + "** *edited his/her message:* "+ 
-                                   "\n**Original:** \n " + before.clean_content + " \n" + 
-                                    "**Update:** \n " + after.clean_content , before.server)
-                                    
-    def insertChar(mystring, position, chartoinsert ):
+        escaped = before.content.translate(str.maketrans({"`": r"\`",
+                                                          "*": r"\*`]",
+                                                          "_": r"\_`"}))
+        escaped2 = after.content.translate(str.maketrans({"`": r"\`",
+                                                          "*": r"\*`]",
+                                                          "_": r"\_`"}))
+        ts = datetime.datetime.now().strftime('%H:%M:%S')
+        await self.appendmodlog_ne(
+            "`" + ts + "` " + before.channel.mention + " :pencil2: **" + before.author.name + "#" + str(
+                before.author.discriminator) + "** *edited his/her message:* " +
+            "\n**Original:** \n " + escaped + " \n" +
+            "**Update:** \n " + escaped2, before.server)
+        await self.appendmodlog_ne(
+            "`" + ts + "` " + before.channel.mention + " :pencil2: **" + before.author.name + "#" + str(
+                before.author.discriminator) + "** *edited his/her message:* " +
+            "\n**Original:** \n " + before.clean_content + " \n" +
+            "**Update:** \n " + after.clean_content, before.server)
+
+    def insertChar(mystring, position, chartoinsert):
         longi = len(mystring)
-        mystring   =  mystring[:position] + chartoinsert + mystring[position:] 
-        return mystring   
-                                    
+        mystring = mystring[:position] + chartoinsert + mystring[position:]
+        return mystring
+
     async def on_member_update(self, before, after):
-        ts = datetime.datetime.now().strftime('%H:%M:%S') 
+        ts = datetime.datetime.now().strftime('%H:%M:%S')
         if before.nick != after.nick:
             if after.nick is None:
-                await self.appendmodlog_ne("`" + ts + "` :pencil: **" + before.name + "#" + str(before.discriminator) + "** *changed his/her name to* "+ 
-                                   "`" + after.name + "`",before.server)
+                await self.appendmodlog_ne("`" + ts + "` :pencil: **" + before.name + "#" + str(
+                    before.discriminator) + "** *changed his/her name to* " +
+                                           "`" + after.name + "`", before.server)
             else:
-                await self.appendmodlog_ne("`" + ts + "` :pencil: **" + before.name + "#" + str(before.discriminator) + "** *changed his/her name to* "+ 
-                                   "`" + after.nick + "`",before.server)
+                await self.appendmodlog_ne("`" + ts + "` :pencil: **" + before.name + "#" + str(
+                    before.discriminator) + "** *changed his/her name to* " +
+                                           "`" + after.nick + "`", before.server)
         if before.roles != after.roles:
             rolesb = [x.name for x in before.roles if x.name != "@everyone"]
             if rolesb:
                 rolesb = sorted(rolesb, key=[x.name for x in before.server.role_hierarchy
-                                       if x.name != "@everyone"].index)
+                                             if x.name != "@everyone"].index)
                 rolesb = ", ".join(rolesb)
             else:
                 rolesb = "None"
-            
+
             rolesa = [x.name for x in after.roles if x.name != "@everyone"]
             if rolesa:
                 rolesa = sorted(rolesa, key=[x.name for x in after.server.role_hierarchy
-                                       if x.name != "@everyone"].index)
+                                             if x.name != "@everyone"].index)
                 rolesa = ", ".join(rolesa)
             else:
                 rolesa = "None"
-            await self.appendmodlog_ne("`" + ts + "` :label: **" + before.name + "#" + str(before.discriminator) + "** *roles have changed* \n"+ 
-                                   "**Original: **" +rolesb + "\n" +
-                                   "**Update: **" + rolesa,before.server)
+            await self.appendmodlog_ne("`" + ts + "` :label: **" + before.name + "#" + str(
+                before.discriminator) + "** *roles have changed* \n" +
+                                       "**Original: **" + rolesb + "\n" +
+                                       "**Update: **" + rolesa, before.server)
 
     async def on_message(self, message):
         if message.channel.is_private or self.bot.user == message.author:
@@ -1403,10 +1441,10 @@ class modenhanced:
                     role = discord.utils.get(member.server.roles, name='Muted')
                     await self.bot.remove_roles(member, role)
                     dataIO.save_json("data/modenhanced/mutes.json", mydict)
-                    data = discord.Embed(colour = discord.Colour.blue())
+                    data = discord.Embed(colour=discord.Colour.blue())
                     data.set_author(name="Automatic Action")
                     data.add_field(name="Action: Unmuted " + member.name + "!", value="Reason: No Reason needed.")
-                    await self.appendmodlog(data,member.server)
+                    await self.appendmodlog(data, member.server)
             await asyncio.sleep(CHECK_DELAY)
 
     async def check_names(self, before, after):
@@ -1435,8 +1473,8 @@ class modenhanced:
                 dataIO.save_json("data/modenhanced/past_nicknames.json",
                                  self.past_nicknames)
 
-    async def appendmodlog(self, data:discord.Embed,server):
-        if(self.settings[server.id]["mod-log"] == None):
+    async def appendmodlog(self, data: discord.Embed, server):
+        if (self.settings[server.id]["mod-log"] == None):
             return
         channel = self.settings[server.id]["mod-log"]
         channel_obj = self.bot.get_channel(channel)
@@ -1445,9 +1483,9 @@ class modenhanced:
             await self.bot.send_message(
                 self.bot.get_channel(channel),
                 embed=data)
-                
-    async def appendmodlog_ne(self, msg:str,server):
-        if(self.settings[server.id]["mod-log"] == None):
+
+    async def appendmodlog_ne(self, msg: str, server):
+        if (self.settings[server.id]["mod-log"] == None):
             return
         channel = self.settings[server.id]["mod-log"]
         channel_obj = self.bot.get_channel(channel)
@@ -1457,7 +1495,7 @@ class modenhanced:
                 self.bot.get_channel(channel),
                 msg)
 
-    async def appendserverlog(self, data:discord.Embed,server):
+    async def appendserverlog(self, data: discord.Embed, server):
         if (self.settings[server.id]["server-log"] == None):
             return
         channel = self.settings[server.id]["server-log"]
@@ -1468,7 +1506,7 @@ class modenhanced:
                 self.bot.get_channel(channel),
                 embed=data)
 
-    async def appendinternal(self, data:discord.Embed,server):
+    async def appendinternal(self, data: discord.Embed, server):
         if (self.settings[server.id]["int-mod-log"] == None):
             return
         channel = self.settings[server.id]["int-mod-log"]
@@ -1534,10 +1572,11 @@ def check_files():
     if not os.path.isfile("data/modenhanced/rules.json"):
         print("Creating empty rules.json...")
         dataIO.save_json("data/modenhanced/rules.json", {})
-        
+
     if not os.path.isfile("data/modenhanced/slowmode.json"):
         print("Creating empty rules.json...")
         dataIO.save_json("data/modenhanced/slowmode.json", {})
+
 
 def setup(bot):
     global logger
@@ -1558,11 +1597,13 @@ def setup(bot):
     loop.create_task(n.mute_check())
     bot.add_cog(n)
 
+
 default_settings = {
-    "ban_mention_spam" : False,
-    "delete_repeats"   : False,
-    "mod-log"          : None
-                   }
+    "ban_mention_spam": False,
+    "delete_repeats": False,
+    "mod-log": None
+}
+
 
 class ModError(Exception):
     pass
@@ -1577,4 +1618,3 @@ class CaseMessageNotFound(ModError):
 
 
 class NoModLogChannel(ModError):
-    pass
