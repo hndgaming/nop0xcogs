@@ -1238,7 +1238,7 @@ class modenhanced:
             match = re.split(r"(.)\1{9,}", message.content)
             if len(match) > 1 or len(match2) > 1:
                 await self.bot.delete_message(message)
-                data = discord.Embed(colour=discord.Colour.green())
+                data = discord.Embed(colour=discord.Colour.grey())
                 if message.author.avatar_url:
                     data.set_thumbnail(url=message.author.avatar_url)
                 data.set_author(name="Automatic Action")
