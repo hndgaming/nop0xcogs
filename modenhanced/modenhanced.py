@@ -1242,8 +1242,8 @@ class modenhanced:
                 if message.author.avatar_url:
                     data.set_thumbnail(url=message.author.avatar_url)
                 data.set_author(name="Automatic Action")
-                data.add_field(name="Action: Deleted Message \"" + message.content + "\" of user " + message.author.name + "!",
-                    value="Reason: Contains spam")
+                data.add_field(name="Action: Deleted Message of "+ message.author.name + " for spam!",
+                               value=message.content)
                 await self.appendmodlog(data, message.server)
                 return True
 
