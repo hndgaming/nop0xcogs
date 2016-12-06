@@ -20,8 +20,6 @@ class modenhanced:
 
     def __init__(self, bot):
         self.bot = bot
-        self.whitelist_list = dataIO.load_json("data/modenhanced/whitelist.json")
-        self.blacklist_list = dataIO.load_json("data/modenhanced/blacklist.json")
         self.ignore_list = dataIO.load_json("data/modenhanced/ignorelist.json")
         self.filter = dataIO.load_json("data/modenhanced/filter.json")
         self.past_names = dataIO.load_json("data/modenhanced/past_names.json")
@@ -32,7 +30,6 @@ class modenhanced:
         settings = dataIO.load_json("data/modenhanced/settings.json")
         self.settings = defaultdict(lambda: default_settings.copy(), settings)
         self.cache = defaultdict(lambda: deque(maxlen=3))
-        self.cases = dataIO.load_json("data/modenhanced/modlog.json")
         self.slowmode = dataIO.load_json("data/modenhanced/slowmode.json")
         self._tmp_banned_cache = []
         self.last_case = defaultdict(lambda: dict())
@@ -274,193 +271,6 @@ class modenhanced:
             await asyncio.sleep(1)
             self._tmp_banned_cache.remove(user)
 
-    @commands.command(no_pm=True, pass_context=True)
-    @checks.admin_or_permissions(manage_nicknames=True)
-    async def rename(self, ctx, user: discord.Member, *, nickname=""):
-        """Changes user's nickname
-        Leaving the nickname empty will remove it."""
-        nickname = nickname.strip()
-        if nickname == "":
-            nickname = None
-        try:
-            await self.bot.change_nickname(user, nickname)
-            await self.bot.say("Done.")
-        except discord.Forbidden:
-            await self.bot.say("I cannot do that, I lack the "
-                               "\"Manage Nicknames\" permission.")
-
-    @commands.group(pass_context=True, no_pm=True)
-    @checks.mod_or_permissions(manage_messages=True)
-    async def cleanup(self, ctx):
-        """Deletes messages.
-        cleanup messages [number]
-        cleanup user [name/mention] [number]
-        cleanup text \"Text here\" [number]"""
-        if ctx.invoked_subcommand is None:
-            await send_cmd_help(ctx)
-
-    @cleanup.command(pass_context=True, no_pm=True)
-    async def text(self, ctx, text: str, number: int):
-        """Deletes last X messages matching the specified text.
-        Example:
-        cleanup text \"test\" 5
-        Remember to use double quotes."""
-
-        channel = ctx.message.channel
-        author = ctx.message.author
-        server = author.server
-        is_bot = self.bot.user.bot
-        has_permissions = channel.permissions_for(server.me).manage_messages
-
-        def check(m):
-            if text in m.content:
-                return True
-            elif m == ctx.message:
-                return True
-            else:
-                return False
-
-        to_delete = [ctx.message]
-
-        if not has_permissions:
-            await self.bot.say("I'm not allowed to delete messages.")
-            return
-
-        tries_left = 5
-        tmp = ctx.message
-
-        while tries_left and len(to_delete) - 1 < number:
-            async for message in self.bot.logs_from(channel, limit=100,
-                                                    before=tmp):
-                if len(to_delete) - 1 < number and check(message):
-                    to_delete.append(message)
-                tmp = message
-            tries_left -= 1
-
-        logger.info("{}({}) deleted {} messages "
-                    " containing '{}' in channel {}".format(author.name,
-                                                            author.id, len(to_delete), text, channel.id))
-
-        if is_bot:
-            await self.mass_purge(to_delete)
-        else:
-            await self.slow_deletion(to_delete)
-
-    @cleanup.command(pass_context=True, no_pm=True)
-    async def user(self, ctx, user: discord.Member, number: int):
-        """Deletes last X messages from specified user.
-        Examples:
-        cleanup user @\u200bTwentysix 2
-        cleanup user Red 6"""
-
-        channel = ctx.message.channel
-        author = ctx.message.author
-        server = author.server
-        is_bot = self.bot.user.bot
-        has_permissions = channel.permissions_for(server.me).manage_messages
-
-        def check(m):
-            if m.author == user:
-                return True
-            elif m == ctx.message:
-                return True
-            else:
-                return False
-
-        to_delete = [ctx.message]
-
-        if not has_permissions:
-            await self.bot.say("I'm not allowed to delete messages.")
-            return
-
-        tries_left = 5
-        tmp = ctx.message
-
-        while tries_left and len(to_delete) - 1 < number:
-            async for message in self.bot.logs_from(channel, limit=100,
-                                                    before=tmp):
-                if len(to_delete) - 1 < number and check(message):
-                    to_delete.append(message)
-                tmp = message
-            tries_left -= 1
-
-        logger.info("{}({}) deleted {} messages "
-                    " made by {}({}) in channel {}"
-                    "".format(author.name, author.id, len(to_delete),
-                              user.name, user.id, channel.name))
-
-        if is_bot:
-            await self.mass_purge(to_delete)
-        else:
-            await self.slow_deletion(to_delete)
-
-    @cleanup.command(pass_context=True, no_pm=True)
-    async def after(self, ctx, message_id: int):
-        """Deletes all messages after specified message
-        To get a message id, enable developer mode in Discord's
-        settings, 'appearance' tab. Then right click a message
-        and copy its id.
-        """
-
-        channel = ctx.message.channel
-        author = ctx.message.author
-        server = channel.server
-        is_bot = self.bot.user.bot
-        has_permissions = channel.permissions_for(server.me).manage_messages
-
-        to_delete = []
-
-        after = await self.bot.get_message(channel, message_id)
-
-        if not has_permissions:
-            await self.bot.say("I'm not allowed to delete messages.")
-            return
-        elif not after:
-            await self.bot.say("Message not found.")
-            return
-
-        async for message in self.bot.logs_from(channel, limit=2000,
-                                                after=after):
-            to_delete.append(message)
-
-        logger.info("{}({}) deleted {} messages in channel {}"
-                    "".format(author.name, author.id,
-                              len(to_delete), channel.name))
-
-        if is_bot:
-            await self.mass_purge(to_delete)
-        else:
-            await self.slow_deletion(to_delete)
-
-    @cleanup.command(pass_context=True, no_pm=True)
-    async def messages(self, ctx, number: int):
-        """Deletes last X messages.
-        Example:
-        cleanup messages 26"""
-
-        channel = ctx.message.channel
-        author = ctx.message.author
-        server = author.server
-        is_bot = self.bot.user.bot
-        has_permissions = channel.permissions_for(server.me).manage_messages
-
-        to_delete = []
-
-        if not has_permissions:
-            await self.bot.say("I'm not allowed to delete messages.")
-            return
-
-        async for message in self.bot.logs_from(channel, limit=number + 1):
-            to_delete.append(message)
-
-        logger.info("{}({}) deleted {} messages in channel {}"
-                    "".format(author.name, author.id,
-                              number, channel.name))
-
-        if is_bot:
-            await self.mass_purge(to_delete)
-        else:
-            await self.slow_deletion(to_delete)
             
     @commands.group(pass_context=True, no_pm=True)
     @checks.admin_or_permissions(manage_channels=True)
@@ -1525,14 +1335,6 @@ def check_files():
     if not os.path.isfile("data/modenhanced/mutes.json"):
         print("Creating empty mutes.json...")
         dataIO.save_json("data/modenhanced/mutes.json", {})
-
-    if not os.path.isfile("data/modenhanced/blacklist.json"):
-        print("Creating empty blacklist.json...")
-        dataIO.save_json("data/modenhanced/blacklist.json", [])
-
-    if not os.path.isfile("data/modenhanced/whitelist.json"):
-        print("Creating empty whitelist.json...")
-        dataIO.save_json("data/modenhanced/whitelist.json", [])
 
     if not os.path.isfile("data/modenhanced/ignorelist.json"):
         print("Creating empty ignorelist.json...")
