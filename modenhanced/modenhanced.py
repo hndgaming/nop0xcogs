@@ -845,7 +845,7 @@ class modenhanced:
             if user.avatar_url:
                 data.set_thumbnail(url=user.avatar_url)
             data.set_author(name="Moderation Log")
-            data.add_field(name="Action: Added Role " + srole.name + " to user " + user.name + "!",
+            data.add_field(name="Action: Removed Role " + srole.name + " from user " + user.name + "!",
                            value="Reason: " + reason)
             data.add_field(name="Roles", value=roles, inline=False)
             await self.appendmodlog(data, ctx.message.author.server)
@@ -1225,7 +1225,7 @@ class modenhanced:
                             data.set_thumbnail(url=message.author.avatar_url)
                         data.set_author(name="Automatic Action")
                         data.add_field(
-                            name="Action: Deleted Message \"" + message.content + "\" of user " + message.author.name + "!",
+                            name="Action: Deleted Message \"" + message.content + "\" of user " + message.author.name + " in "+ message.channel.mention +"!",
                             value="Reason: Contains blacklisted word \"" + w + "\"")
                         await self.appendmodlog(data, message.server)
                         return True
@@ -1242,7 +1242,7 @@ class modenhanced:
                 if message.author.avatar_url:
                     data.set_thumbnail(url=message.author.avatar_url)
                 data.set_author(name="Automatic Action")
-                data.add_field(name="Action: Deleted Message of "+ message.author.name + " for spam!",
+                data.add_field(name="Action: Deleted Message of "+ message.author.name + " in "+ message.channel.mention + "for spam!",
                                value=message.content)
                 await self.appendmodlog(data, message.server)
                 return True
@@ -1295,6 +1295,10 @@ class modenhanced:
 
     async def on_member_join(self, member):
         ts = datetime.datetime.now().strftime('%H:%M:%S')
+        if datetime.datetime.utcnow() - datetime.timedelta(hours=24) < member.created_at:
+            await self.appendserverlog("`" + ts + "` :white_check_mark: __** New account " + member.name + "#" + str(
+            member.discriminator) + "**__ *(" + member.id + ")* **joined the server**", member.server)
+            return
         await self.appendserverlog("`" + ts + "` :white_check_mark: __**" + member.name + "#" + str(
             member.discriminator) + "**__ *(" + member.id + ")* **joined the server**", member.server)
 
