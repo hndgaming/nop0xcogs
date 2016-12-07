@@ -1106,8 +1106,8 @@ class modenhanced:
     async def on_member_join(self, member):
         ts = datetime.datetime.now().strftime('%H:%M:%S')
         if datetime.datetime.utcnow() - datetime.timedelta(hours=24) < member.created_at:
-            await self.appendserverlog("`" + ts + "` :white_check_mark: __** New account " + member.name + "#" + str(
-            member.discriminator) + "**__ *(" + member.id + ")* **joined the server**", member.server)
+            await self.appendserverlog("`" + ts + "` :white_check_mark: __**New account " + member.name + "#" + str(
+            member.discriminator) + "**__ *(" + member.id + ")* **joined the server** :bangbang:", member.server)
             return
         await self.appendserverlog("`" + ts + "` :white_check_mark: __**" + member.name + "#" + str(
             member.discriminator) + "**__ *(" + member.id + ")* **joined the server**", member.server)
