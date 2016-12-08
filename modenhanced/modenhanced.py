@@ -939,9 +939,7 @@ class modenhanced:
                         highestelem = user
                         highest = temp[user]["points"]
                 try:
-                    tempo = self.warnings[highestelem]["points"]
-                    member = ctx.message.server.get_member(highestelem)
-                    msg += str(member.name) + " : " + str(tempo) + "\n"
+                    msg += str(ctx.message.server.get_member(highestelem)) + " : " + str(self.warnings[highestelem]["points"]) + "\n"
                 except KeyError:
                     break
                 del (temp[highestelem])
