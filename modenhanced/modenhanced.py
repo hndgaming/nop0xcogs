@@ -487,8 +487,8 @@ class modenhanced:
                 role = discord.utils.get(member.server.roles, name='Muted')
                 await self.bot.add_roles(member, role)
             data = discord.Embed(colour=discord.Colour.orange())
-            if user.avatar_url:
-                data.set_thumbnail(url=user.avatar_url)
+            if member.avatar_url:
+                data.set_thumbnail(url=member.avatar_url)
             data.set_author(name="Automatic filter action")
             data.add_field(name="Action: Muted " + member.name + " for " + str(duration) + " " + unit + "!",
                            value="Reason: " + reason)
