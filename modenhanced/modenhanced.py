@@ -102,20 +102,65 @@ class modenhanced:
         await self.bot.say("Mod role set to '{}'".format(role_name))
 
     @modset.command(name="slowmode", pass_context=True, no_pm=True)
-    async def _modset_slowmode(self, ctx):
+    async def _modset_slowmode(self, ctx, toggle:str="on", messages:float=2.0, persecond:float=5.0):
         """Toggles Slowmode for all Chats.."""
         server = ctx.message.server
         try:
-            if self.settings[server.id]["slowmode"]["enabled"]:
-                self.settings[server.id]["slowmode"]["enabled"] = False
-            else:
+            if toggle=="on":
                 self.settings[server.id]["slowmode"]["enabled"] = True
+            else:
+                self.settings[server.id]["slowmode"]["enabled"] = False
         except:
             self.settings[server.id] = {}
             self.settings[server.id]["slowmode"] = {}
             self.settings[server.id]["slowmode"]["enabled"] = True
+        
+        if messages != 2.0:
+            try:
+                if messages >= 1.0:
+                    self.settings[server.id]["slowmode"]["messages"] = messages
+                else:
+                    await self.bot.say("Messages needs to be more than or equal to 1!")
+            except:
+                self.settings[server.id]["slowmode"]["messages"] = {}
+                if messages >= 1.0:
+                    self.settings[server.id]["slowmode"]["messages"] = messages
+                else:
+                    await self.bot.say("Messages needs to be more than or equal to 1!")
+        else:
+            try:
+                test = self.settings[server.id]["slowmode"]["messages"]
+            except:
+                self.settings[server.id]["slowmode"]["messages"] = {}
+                self.settings[server.id]["slowmode"]["messages"] = messages
+
+        
+        if persecond != 5.0:
+            try:
+                if persecond >= 1.0:
+                    self.settings[server.id]["slowmode"]["persecond"] = persecond
+                else:
+                    await self.bot.say("Per second measure needs to be more than or equal to 1!")
+            except:
+                self.settings[server.id]["slowmode"]["persecond"] = {}
+                if persecond >= 1.0:
+                    self.settings[server.id]["slowmode"]["persecond"] = persecond
+                else:
+                    await self.bot.say("Per second measure needs to be more than or equal to 1!")
+        else:
+            try:
+                test = self.settings[server.id]["slowmode"]["persecond"]
+            except:
+                self.settings[server.id]["slowmode"]["persecond"] = {}
+                self.settings[server.id]["slowmode"]["persecond"] = persecond
+
+            
         dataIO.save_json("data/modenhanced/settings.json", self.settings)
-        await self.bot.say("Slowmode toggled to " + str(self.settings[server.id]["slowmode"]["enabled"]))
+        if self.settings[server.id]["slowmode"]["enabled"]:
+            await self.bot.say("Slowmode toggled to " + str(self.settings[server.id]["slowmode"]["enabled"]) + "\nWill rate limit when a User sends more than " 
+                + str(self.settings[server.id]["slowmode"]["messages"]) + " Messages in " + str(self.settings[server.id]["slowmode"]["persecond"]) + " seconds!" )
+        else:
+            await self.bot.say("Slowmode toggled to " + str(self.settings[server.id]["slowmode"]["enabled"]) + "\nWill not rate limit!")
 
     @modset.command(pass_context=True, no_pm=True)
     async def modlog(self, ctx, channel: discord.Channel = None):
@@ -201,25 +246,30 @@ class modenhanced:
             self.settings[server.id]["delete_repeats"] = False
             await self.bot.say("Repeated messages will be ignored.")
         dataIO.save_json("data/modenhanced/settings.json", self.settings)
-
-    @modset.command(pass_context=True, no_pm=True)
-    async def resetcases(self, ctx):
-        """Resets modlog's cases"""
-        server = ctx.message.server
-        self.cases[server.id] = {}
-        dataIO.save_json("data/modenhanced/modlog.json", self.cases)
-        await self.bot.say("Cases have been reset.")
-
-    async def auto_kick(self, user: discord.Member, reason: str = ""):
-        """Kicks user."""
+        
+    @commands.command(pass_context=True, name="slowmodemute")
+    async def slowmode_setmute(self,ctx, duration:int, unit:str):
+        server = ctx.message.server;
+        if (duration <= 0) or (unit == ""):
+            if (unit != "minutes") or (unit != "hours"):
+                await self.bot.say("You need to supply a valid duration for auto muting! Valid: minutes / hours")
+                return
         try:
-            data = discord.Embed(colour=discord.Colour.red())
-            data.set_author(name="Automatic Filter Action")
-            data.add_field(name="Action: Kicked " + user.name + " from the server", value="Reason: " + reason)
-            await self.bot.kick(user)
-        except Exception as e:
-            print(e)
-
+            self.settings[server.id]["slowmode"]["mute_dur"] = duration
+        except KeyError:
+            self.settings[server.id]["slowmode"]["mute_dur"] = {}
+            self.settings[server.id]["slowmode"]["mute_dur"] = duration
+        try:
+            self.settings[server.id]["slowmode"]["mute_un"] = unit
+        except:
+            self.settings[server.id]["slowmode"]["mute_un"] = {}
+            self.settings[server.id]["slowmode"]["mute_un"] = unit
+            
+        dataIO.save_json("data/modenhanced/slowmode.json", self.settings)
+    
+        await self.bot.say("Will mute User when rate limit is broken 15 Times in a row for " + str(self.settings[server.id]["slowmode"]["mute_dur"]) + " " 
+            + str(self.settings[server.id]["slowmode"]["mute_un"]))
+        
     @commands.command(no_pm=True, pass_context=True)
     @checks.admin_or_permissions(ban_members=True)
     async def ban(self, ctx, user: discord.Member, reason: str, days: int = 0):
@@ -740,6 +790,7 @@ class modenhanced:
                                "nickname change.")
 
     @commands.command(name="warn", pass_context=True)
+    @checks.admin_or_permissions(manage_roles=True)
     async def warning(self, ctx, member: discord.Member, rulenumber: str, reason):
         try:
             points = int(self.warnings[member.id]["points"])
@@ -832,6 +883,7 @@ class modenhanced:
             # await self.bot.send_message(ctx.message.author, "das ist ein test")
 
     @commands.command(name="flushwarn", pass_context=True)
+    @checks.admin_or_permissions(manage_roles=True)
     async def flush_warning(self, ctx, member: discord.Member):
         try:
             del (self.warnings[member.id])
@@ -927,6 +979,7 @@ class modenhanced:
             # await self.bot.send_message(ctx.message.author, "das ist ein test")
 
     @commands.command(name="warnlist", pass_context=True)
+    @checks.admin_or_permissions(manage_roles=True)
     async def warninglist(self, ctx,member:discord.Member = None, limit: int = 10):
         if member == None:
             msg = ""
@@ -1104,8 +1157,8 @@ class modenhanced:
     async def on_member_join(self, member):
         ts = datetime.datetime.now().strftime('%H:%M:%S')
         if datetime.datetime.utcnow() - datetime.timedelta(hours=24) < member.created_at:
-            await self.appendserverlog("`" + ts + "` :white_check_mark: __**New account " + member.name + "#" + str(
-            member.discriminator) + "**__ *(" + member.id + ")* **joined the server** :bangbang:", member.server)
+            await self.appendserverlog("`" + ts + "` :white_check_mark: __** New account " + member.name + "#" + str(
+            member.discriminator) + "**__ *(" + member.id + ")* **joined the server**", member.server)
             return
         await self.appendserverlog("`" + ts + "` :white_check_mark: __**" + member.name + "#" + str(
             member.discriminator) + "**__ *(" + member.id + ")* **joined the server**", member.server)
@@ -1120,32 +1173,60 @@ class modenhanced:
         await self.appendserverlog("`" + ts + "` :hammer: __**" + member.name + "#" + str(
             member.discriminator) + "**__ *(" + member.id + ")* **has been banned from the server**", member.server)
 
-
-            # async def rate_limit(self, message):
-        #   rate = 5.0; // unit: messages
-        #  per  = 8.0; // unit: seconds
-        # allowance = rate; // unit: messages
-        # last_check = now(); // floating-point, e.g. usec accuracy. Unit: seconds
-
-    #
-    #       when (message_received):
-    #          current = now();
-    #         time_passed = current - last_check;
-    #        last_check = current;
-    #       allowance += time_passed * (rate / per);
-    #      if (allowance > rate):
-    #         allowance = rate; // throttle
-    #    if (allowance < 1.0):
-    #       discard_message();
-    #  else:
-    #     forward_message();
-    #    allowance -= 1.0;
+    async def rate_limit(self, message):
+        messages = 1.0; # unit: messages
+        persecond  = 1.0; # unit: seconds
+        server = message.server
+        author = message.author
+        
+        try:
+            test=self.slowmode[server.id][author.id]
+        except:
+            self.slowmode[server.id] = {}
+        
+        try:
+            self.slowmode[server.id][author.id]["lastcheck"]= datetime.datetime.now() # floating-point, e.g. usec accuracy. Unit: seconds
+        except KeyError:
+            self.slowmode[server.id][author.id]={}
+            self.slowmode[server.id][author.id]["lastcheck"]= {}
+            self.slowmode[server.id][author.id]["lastcheck"] = datetime.datetime.now()
+        
+        try:
+            allowance = self.slowmode[server.id][author.id]["allowance"]
+        except:
+            self.slowmode[server.id][author.id]["allowance"] = self.settings[server.id]["slowmode"]["messages"]
+            
+        try:
+            hits = self.slowmode[server.id][author.id]["hits"]
+        except:
+            self.slowmode[server.id][author.id]["hits"] = 0
+        
+        current = datetime.datetime.now();
+        time_passed = current - self.slowmode[server.id][author.id]["lastcheck"]
+        time_passed = time_passed.total_seconds()
+        self.slowmode[server.id][author.id]["lastcheck"] = current
+        self.slowmode[server.id][author.id]["allowance"] += time_passed * (self.settings[server.id]["slowmode"]["messages"] / self.settings[server.id]["slowmode"]["persecond"])
+        if (self.slowmode[server.id][author.id]["allowance"] > self.settings[server.id]["slowmode"]["messages"]):
+            self.slowmode[server.id][author.id]["allowance"] = self.settings[server.id]["slowmode"]["messages"]; # throttle
+        if (self.slowmode[server.id][author.id]["allowance"] < 1.0):
+            if self.slowmode[server.id][author.id]["hits"] >=10:
+                await self.auto_mute(author, self.settings[server.id]["slowmode"]["mute_dur"], self.settings[server.id]["slowmode"]["mute_un"], "for exceeding rate limit!");
+                self.slowmode[server.id][author.id]["hits"] = 0
+            else:
+                self.slowmode[server.id][author.id]["hits"] += 1
+            return True # delete
+        else:
+            self.slowmode[server.id][author.id]["allowance"] -= 1.0
+            self.slowmode[server.id][author.id]["hits"] = 0
+            return False # pass
 
     async def on_message_delete(self, message):
         if message.channel.is_private or self.bot.user == message.author:
             return
         current_ch = message.channel
         if current_ch.id in self.ignore_list["CHANNELS"]:
+            return
+        if self.settings[message.server.id]["slowmode"]["enabled"]:
             return
         ts = datetime.datetime.now().strftime('%H:%M:%S')
         if len(message.content) > 40:
@@ -1223,11 +1304,11 @@ class modenhanced:
             return
         deleted = await self.check_filter(message)
         if not deleted:
+            if self.settings[message.server.id]["slowmode"]["enabled"]:
+                if await self.rate_limit(message):
+                    await self.bot.delete_message(message)
+        if not deleted:
             deleted = await self.check_spammychars(message)
-        if not deleted:
-            deleted = await self.check_duplicates(message)
-        if not deleted:
-            deleted = await self.check_mention_spam(message)
 
     async def mute_check(self):
         CHECK_DELAY = 60
@@ -1367,7 +1448,7 @@ def check_files():
         dataIO.save_json("data/modenhanced/rules.json", {})
 
     if not os.path.isfile("data/modenhanced/slowmode.json"):
-        print("Creating empty rules.json...")
+        print("Creating empty slowmode.json...")
         dataIO.save_json("data/modenhanced/slowmode.json", {})
 
 
