@@ -5,15 +5,22 @@ from discord.ext import commands
 from cogs.utils import checks
 import pycountry
 import re
+import os
+from .utils.dataIO import dataIO
 
-class countrycode:
+class location:
 
     def __init__(self, bot):
+        self.countries = dataIO.load_json("data/countrycode/countries.json")
+        self.subregions = dataIO.load_json("data/countrycode/subregions.json")
         self.bot = bot
 
     @commands.command(pass_context=True, no_pm=True)
     async def location(self, ctx, country: str):
         """Example: -location GB"""
+        self.countries = dataIO.load_json("data/countrycode/countries.json")
+        self.subregions = dataIO.load_json("data/countrycode/subregions.json")
+        
         server = ctx.message.server
         user = ctx.message.author
         perms = discord.Permissions.none()
@@ -28,52 +35,66 @@ class countrycode:
         try:
             if m:
                 word1 = m.group(1)
-                countryobj = pycountry.countries.get(alpha2=word1.upper())
+                countryobj = pycountry.countries.get(alpha_2=word1.upper())
                 subregionobj = pycountry.subdivisions.get(code=country.upper())
             else:
-                countryobj = pycountry.countries.get(alpha2=country.upper())
+                countryobj = pycountry.countries.get(alpha_2=country.upper())
         except:
             countryobj = None
         easter = "shithole";
 
         if countryobj is not None:
-            count = 0;
             if subregionobj is not None:
-                msg = "Number of members for " + countryobj.name + ": " + subregionobj.name + " :flag_" + countryobj.alpha2.lower() + ": `"
+                msg = "Members from " + countryobj.name + ": " + subregionobj.name + " :flag_" + countryobj.alpha_2.lower() + ": ```"
                 try:
-                    for member in server._members:
-                        for role in server._members[member].roles:
-                            if subregionobj.code == role.name:
-                                count += 1;
-                                #msg = msg + "\n• " + server._members[member].name
-                    msg = msg + str(count) +  "`"
-                    if msg != "Number of members for " + countryobj.name + ": " + subregionobj.name + " :flag_" + countryobj.alpha2.lower().lower() + ": ``":
-                        await self.bot.say(msg)
+                    for member in server.members:
+                        if member.id in self.subregions[subregionobj.code]:
+                            msg = msg + "\n• " + member.name
+                    msg = msg + "```"
+                    if msg != "Members from " + countryobj.name + ": " + subregionobj.name + " :flag_" + countryobj.alpha_2.lower().lower() + ": ``````":
+                        await self.bot.send_message(user,msg)
                     else:
                         await self.bot.say(
+                            "No one found in " + countryobj.name + ": " + subregionobj.name + " :flag_" + countryobj.alpha_2.lower().lower() + ": :(")
+                except:
+                    await self.bot.say(
                             "No one found in " + countryobj.name + ": " + subregionobj.name + " :flag_" + countryobj.alpha2.lower().lower() + ": :(")
-                except:
-                    await self.bot.say("w00ps, something went wrong! :( Please try again.")
             else:
-                msg = "Number of members for " + countryobj.name + " :flag_"+ countryobj.alpha2.lower() +": `"
+                msg = "Members from " + countryobj.name + " :flag_"+ countryobj.alpha_2.lower() +": ```"
                 try:
-                    for member in server._members:
-                        for role in server._members[member].roles:
-                            if countryobj.name == role.name:
-                                count += 1;
-                                #msg = msg + "\n• " + server._members[member].name
-                    msg = msg + str(count) + "`"
-                    if msg != "Number of members for " + countryobj.name + " :flag_"+ countryobj.alpha2.lower() +": ``":
-                        await self.bot.say(msg)
+                    for member in server.members:
+                        if member.id in self.countries[countryobj.name]:
+                            msg = msg + "\n• " + member.name
+                    msg = msg + "```"
+                    if msg != "Members from " + countryobj.name + " :flag_"+ countryobj.alpha_2.lower() +": ``````":
+                        await self.bot.send_message(user,msg)
                     else:
-                        await self.bot.say("No one found in " + countryobj.name + " :flag_"+ countryobj.alpha2.lower() +": :(")
+                        await self.bot.say("No one found in " + countryobj.name + " :flag_"+ countryobj.alpha_2.lower() +": :(")
                 except:
-                    await self.bot.say("w00ps, something went wrong! :( Please try again.")
+                    await self.bot.say("No one found in " + countryobj.name + " :flag_"+ countryobj.alpha_2.lower() +": :(")
         else:
             if country.lower() == easter:
                 msg = "All members for SHITHOLE :poop: : \n```•SpiritoftheWest#4290```"
                 await self.bot.say(msg)
             else:
                 await self.bot.say("Sorry I don't know your country! Did you use the correct ISO countrycode? \nExample: `-location GB`")
+
+def check_folders():
+    folders = ("data", "data/countrycode/")
+    for folder in folders:
+        if not os.path.exists(folder):
+            print("Creating " + folder + " folder...")
+            os.makedirs(folder)
+            
+def check_files():
+    if not os.path.isfile("data/countrycode/countries.json"):
+        print("Creating empty countries.json...")
+        dataIO.save_json("data/countrycode/countries.json", {})
+    if not os.path.isfile("data/countrycode/subregions.json"):
+        print("Creating empty subregions.json...")
+        dataIO.save_json("data/countrycode/subregions.json", {})
+        
 def setup(bot):
-    bot.add_cog(countrycode(bot))
+    check_folders()
+    check_files()
+    bot.add_cog(location(bot))
