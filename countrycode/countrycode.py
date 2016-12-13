@@ -196,4 +196,6 @@ def check_files():
         dataIO.save_json("data/countrycode/subregions.json", {})
 
 def setup(bot):
+    check_folders()
+    check_files()
     bot.add_cog(countrycode(bot))
