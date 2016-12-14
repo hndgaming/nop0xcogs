@@ -112,18 +112,17 @@ class location:
             wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
             templist2 = ["code", "count"]
             wr.writerow(templist2)
-            with open('data/countrycode/countries.json') as json_data:
-                d = json.load(json_data)
-                total = len(d)
-                i=0
-                for country in d:
-                    await self.bot.edit_message(msg, "Looking up where HND members are from: " + str(i) + "/" + str(total))
-                    con = pycountry.countries.get(name=country)
-                    count = len(d[country])
-                    i += 1
-                    if count != 0:
-                        templist=[con.alpha_3,count]
-                        wr.writerow(templist)
+            d = dataIO.load_json('data/countrycode/countries.json')
+            total = len(d)
+            i=0
+            for country in d:
+                await self.bot.edit_message(msg, "Looking up where HND members are from: " + str(i) + "/" + str(total))
+                con = pycountry.countries.get(name=country)
+                count = len(d[country])
+                i += 1
+                if count != 0:
+                    templist=[con.alpha_3,count]
+                    wr.writerow(templist)
         
         df = pd.read_csv('data/countrycode/countries.csv')
         client_id = '7c25f864e1c79db'
