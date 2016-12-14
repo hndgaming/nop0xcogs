@@ -1156,13 +1156,14 @@ class modenhanced:
 
     async def on_member_join(self, member):
         ts = datetime.datetime.now().strftime('%H:%M:%S')
-        since_created = (ctx.message.timestamp - user.created_at).days
-        user_created = user.created_at.strftime("%d/%b/%Y")
+        since_created = (datetime.datetime.now() - member.created_at).days
+        user_created = member.created_at.strftime("%d/%b/%Y")
         if datetime.datetime.utcnow() - datetime.timedelta(hours=24) < member.created_at:
             await self.appendserverlog("`" + ts + "` :white_check_mark: :bangbang: *New account* __**" + member.name + "#" + str(
-            member.discriminator) + "**__ *(" + member.id + ")* **joined the server** `Account created " +user_created + " (" + since_created+ " Days ago)`" , member.server)
+            member.discriminator) + "**__ *(" + member.id + ")* **joined the server** `Account created " +user_created + " (" + str(since_created)+ " Days ago)`" , member.server)
+            return
         await self.appendserverlog("`" + ts + "` :white_check_mark: __**" + member.name + "#" + str(
-            member.discriminator) + "**__ *(" + member.id + ")* **joined the server** `Account created " +user_created + " (" + since_created+ " Days ago)`", member.server)
+            member.discriminator) + "**__ *(" + member.id + ")* **joined the server** `Account created " +user_created + " (" + str(since_created)+ " Days ago)`", member.server)
 
     async def on_member_remove(self, member):
         ts = datetime.datetime.now().strftime('%H:%M:%S')
