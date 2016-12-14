@@ -9,6 +9,7 @@ import os
 import datetime
 import pandas as pd
 import plotly.plotly as py
+import plotly
 from imgurpython import ImgurClient
 import csv
 from .utils.dataIO import dataIO
@@ -123,7 +124,8 @@ class location:
                 if count != 0:
                     templist=[con.alpha_3,count]
                     wr.writerow(templist)
-        
+                    
+        plotly.tools.set_credentials_file(username='Nop0x', api_key='TFj7IehBUuyOnHMWxI3i')
         df = pd.read_csv('data/countrycode/countries.csv')
         client_id = '7c25f864e1c79db'
         client_secret = '2f0e0023b46fe6c615dc73534947313177628b0b'
