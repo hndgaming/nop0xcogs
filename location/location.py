@@ -6,6 +6,11 @@ from cogs.utils import checks
 import pycountry
 import re
 import os
+import datetime
+import pandas as pd
+import plotly.plotly as py
+from imgurpython import ImgurClient
+import csv
 from .utils.dataIO import dataIO
 
 class location:
@@ -13,7 +18,25 @@ class location:
     def __init__(self, bot):
         self.countries = dataIO.load_json("data/countrycode/countries.json")
         self.subregions = dataIO.load_json("data/countrycode/subregions.json")
+        self.cooldown = datetime.datetime.now()
+        self.lastlink = ""
         self.bot = bot
+
+    @commands.command(pass_context=True, no_pm=True)
+    async def locate(self, ctx, user: discord.Member):
+        """Example: -locate @Nop0x
+            Requires Mention or Name"""
+        msg = user.name + " has the following countries set: ```"
+        self.countries = dataIO.load_json("data/countrycode/countries.json")
+        self.subregions = dataIO.load_json("data/countrycode/subregions.json")
+        for country in self.countries:
+            if user.id in self.countries[country]:
+                msg += "•" + country + "\n"
+        msg += "```"
+        if msg == user.name + " has the following countries set: ``````":
+            await self.bot.say(user.name + " has no country set :(")
+            return
+        await self.bot.say(msg)
 
     @commands.command(pass_context=True, no_pm=True)
     async def location(self, ctx, country: str):
@@ -78,7 +101,64 @@ class location:
                 await self.bot.say(msg)
             else:
                 await self.bot.say("Sorry I don't know your country! Did you use the correct ISO countrycode? \nExample: `-location GB`")
-
+                
+    @commands.command(pass_context=True, no_pm=True)
+    async def map(self, ctx):
+        if(datetime.datetime.now() < self.cooldown):
+            await self.bot.say("The holy map of awesomness: " + self.lastlink)
+            return
+        msg = await self.bot.say("Looking up where HND members are from...")
+        with open("data/countrycode/countries.csv", 'w') as myfile:
+            wr = csv.writer(myfile, quoting=csv.QUOTE_ALL)
+            templist2 = ["code", "count"]
+            wr.writerow(templist2)
+            with open('data/countrycode/countries.json') as json_data:
+                d = json.load(json_data)
+                total = len(d)
+                i=0
+                for country in d:
+                    await self.bot.edit_message(msg, "Looking up where HND members are from: " + str(i) + "/" + str(total))
+                    con = pycountry.countries.get(name=country)
+                    count = len(d[country])
+                    i += 1
+                    if count != 0:
+                        templist=[con.alpha_3,count]
+                        wr.writerow(templist)
+        
+        df = pd.read_csv('data/countrycode/countries.csv')
+        client_id = '7c25f864e1c79db'
+        client_secret = '2f0e0023b46fe6c615dc73534947313177628b0b'
+        client = ImgurClient(client_id, client_secret)
+        
+        data = [ dict(
+                type = 'choropleth',
+                locations = df['code'],
+                z = df['count'],
+                autocolorscale = True,
+                reversescale = False,
+                marker = dict(
+                    line = dict (
+                        color = 'rgb(180,180,180)',
+                        width = 0.5
+                    ) ),
+                colorbar = dict(),
+              ) ]
+        
+        layout = dict(
+            title = 'HND World Map',
+            geo = dict(
+                showframe = False,
+                showcoastlines = True,
+            )
+        )
+        await self.bot.edit_message(msg, "Generating heatmap...")
+        fig = dict( data=data, layout=layout )
+        py.image.save_as(fig, filename='worldmap.png', scale=2, width=1920, height = 1080)
+        upload = client.upload_from_path('worldmap.png')
+        await self.bot.say("The holy map of awesomness: " + upload['link'])
+        self.lastlink = upload['link']
+        self.cooldown = datetime.datetime.now() + datetime.timedelta(hours=1)
+        
 def check_folders():
     folders = ("data", "data/countrycode/")
     for folder in folders:
