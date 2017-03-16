@@ -128,7 +128,7 @@ class countrycode:
                 #await self.bot.say("w00ps, something went wrong! :( Please try again.")
         else:
             await self.bot.say(
-                "Sorry I don't know your country! Did you use the correct ISO countrycode? \nExample: `-country GB` or `-country US-CA for california`")
+                "Sorry I don't know your country! Did you use the correct ISO countrycode? \nExample: `-country GB` or `-country US-CA for california \n https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements for a list of countrycodes!`")
 
     @commands.command(pass_context=True, no_pm=True)
     async def removecountry(self, ctx, country: str):
@@ -177,7 +177,7 @@ class countrycode:
                 except:
                     await self.bot.say("You already removed that country as your countryorigin!")
         else:
-            await self.bot.say("Sorry I don't know your country! Did you use the correct ISO countrycode?")
+            await self.bot.say("Sorry I don't know your country! Did you use the correct ISO countrycode?\n https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2#Officially_assigned_code_elements for a list of countrycodes!")
 
 
 def check_folders():
